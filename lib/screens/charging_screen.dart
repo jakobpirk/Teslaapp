@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import '../providers/vehicle_provider.dart';
+import '../features/vehicle/presentation/providers/vehicle_provider.dart';
 import '../utils/app_theme.dart';
 
 class ChargingScreen extends StatefulWidget {
@@ -200,10 +200,10 @@ class _ChargingScreenState extends State<ChargingScreen> {
         onPressed: () async {
           try {
             if (isCharging) {
-              await provider.stopCharging();
+              await provider.stopCharge();
               _showSnackBar('Charging stopped');
             } else {
-              await provider.startCharging();
+              await provider.startCharge();
               _showSnackBar('Charging started');
             }
           } catch (e) {
@@ -280,7 +280,7 @@ class _ChargingScreenState extends State<ChargingScreen> {
                   setState(() => _chargeLimit = value);
                 },
                 onChangeEnd: (value) {
-                  provider.setChargeLimit(value.toInt());
+                  provider.setLimit(value.toInt());
                   _showSnackBar('Charge limit set to ${value.toInt()}%');
                 },
               ),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import '../providers/vehicle_provider.dart';
+import '../features/vehicle/presentation/providers/vehicle_provider.dart';
 import '../utils/app_theme.dart';
 import '../widgets/status_card.dart';
 import '../widgets/action_button.dart';
@@ -326,10 +326,10 @@ class _HomeScreenState extends State<HomeScreen> {
   void _handleLockToggle(VehicleProvider provider, state) async {
     try {
       if (state?.isLocked == true) {
-        await provider.unlockVehicle();
+        await provider.unlock();
         _showSnackBar('Vehicle unlocked');
       } else {
-        await provider.lockVehicle();
+        await provider.lock();
         _showSnackBar('Vehicle locked');
       }
     } catch (e) {
@@ -339,7 +339,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _handleFlashLights(VehicleProvider provider) async {
     try {
-      await provider.flashLights();
+      await provider.flash();
       _showSnackBar('Lights flashed');
     } catch (e) {
       _showSnackBar('Failed: ${e.toString()}', isError: true);
@@ -348,7 +348,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _handleHonk(VehicleProvider provider) async {
     try {
-      await provider.honkHorn();
+      await provider.honk();
       _showSnackBar('Horn honked');
     } catch (e) {
       _showSnackBar('Failed: ${e.toString()}', isError: true);
