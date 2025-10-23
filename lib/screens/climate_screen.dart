@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import '../providers/vehicle_provider.dart';
+import '../features/vehicle/presentation/providers/vehicle_provider.dart';
 import '../utils/app_theme.dart';
 
 class ClimateScreen extends StatefulWidget {
@@ -141,7 +141,7 @@ class _ClimateScreenState extends State<ClimateScreen> {
                   setState(() => _targetTemp = value);
                 },
                 onChangeEnd: (value) {
-                  context.read<VehicleProvider>().setTemperature(value);
+                  context.read<VehicleProvider>().setClimateTemperature(value);
                 },
               ),
             ),
@@ -170,10 +170,10 @@ class _ClimateScreenState extends State<ClimateScreen> {
       child: ElevatedButton(
         onPressed: () async {
           if (isClimateOn) {
-            await provider.stopClimate();
+            await provider.stopClimateControl();
             _showSnackBar('Climate stopped');
           } else {
-            await provider.startClimate();
+            await provider.startClimateControl();
             _showSnackBar('Climate started');
           }
         },
@@ -210,7 +210,7 @@ class _ClimateScreenState extends State<ClimateScreen> {
                 Expanded(
                   child: OutlinedButton.icon(
                     onPressed: () async {
-                      await provider.startDefrost();
+                      await provider.enableDefrost();
                       _showSnackBar('Defrost started');
                     },
                     icon: const Icon(Icons.ac_unit),
@@ -225,7 +225,7 @@ class _ClimateScreenState extends State<ClimateScreen> {
                 Expanded(
                   child: OutlinedButton.icon(
                     onPressed: () async {
-                      await provider.stopDefrost();
+                      await provider.disableDefrost();
                       _showSnackBar('Defrost stopped');
                     },
                     icon: const Icon(Icons.stop),
@@ -274,7 +274,7 @@ class _ClimateScreenState extends State<ClimateScreen> {
                   child: OutlinedButton.icon(
                     onPressed: () {
                       // Seat 0 = Driver, Level 3 = High
-                      provider.startSeatHeating(0, 3);
+                      provider.setHeater(0, 3);
                       _showSnackBar('Seat heating started');
                     },
                     icon: const Icon(Icons.local_fire_department),
@@ -289,7 +289,7 @@ class _ClimateScreenState extends State<ClimateScreen> {
                 Expanded(
                   child: OutlinedButton.icon(
                     onPressed: () {
-                      provider.startSeatCooling(0, 3);
+                      provider.setCooler(0, 3);
                       _showSnackBar('Seat cooling started');
                     },
                     icon: const Icon(Icons.ac_unit),
@@ -329,7 +329,7 @@ class _ClimateScreenState extends State<ClimateScreen> {
                 Expanded(
                   child: OutlinedButton.icon(
                     onPressed: () async {
-                      await provider.startSteeringWheelHeater();
+                      await provider.enableWheelHeater();
                       _showSnackBar('Steering wheel heater started');
                     },
                     icon: const Icon(Icons.local_fire_department),
@@ -344,7 +344,7 @@ class _ClimateScreenState extends State<ClimateScreen> {
                 Expanded(
                   child: OutlinedButton.icon(
                     onPressed: () async {
-                      await provider.stopSteeringWheelHeater();
+                      await provider.disableWheelHeater();
                       _showSnackBar('Steering wheel heater stopped');
                     },
                     icon: const Icon(Icons.stop),

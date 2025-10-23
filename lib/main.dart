@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'providers/vehicle_provider.dart';
-import 'services/tessie_api_service.dart';
+import 'core/di/injection_container.dart';
+import 'features/vehicle/presentation/providers/vehicle_provider.dart';
 import 'screens/home_screen.dart';
 import 'utils/app_theme.dart';
 
@@ -17,6 +17,9 @@ void main() async {
     // If .env file doesn't exist, use default values
     print('Warning: .env file not found. Using default values.');
   }
+
+  // Initialize dependency injection
+  await initializeDependencies();
 
   // Set preferred orientations
   await SystemChrome.setPreferredOrientations([
@@ -32,18 +35,8 @@ class TessieApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Get API credentials from environment or use defaults
-    final apiKey = dotenv.env['TESSIE_API_KEY'] ?? 'YOUR_API_KEY_HERE';
-    final vin = dotenv.env['TESSIE_VIN'] ?? 'YOUR_VIN_HERE';
-
-    // Create API service
-    final apiService = TessieApiService(
-      apiKey: apiKey,
-      vin: vin,
-    );
-
     return ChangeNotifierProvider(
-      create: (_) => VehicleProvider(apiService),
+      create: (_) => sl<VehicleProvider>(),
       child: MaterialApp(
         title: 'Tessie',
         theme: AppTheme.darkTheme,
