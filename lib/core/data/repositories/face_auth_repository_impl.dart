@@ -6,6 +6,7 @@ import '../../domain/repositories/face_auth_repository.dart';
 import '../datasources/face_auth_local_data_source.dart';
 import '../datasources/face_auth_remote_data_source.dart';
 import '../mappers/face_auth_mapper.dart';
+import '../exceptions/data_exceptions.dart';
 
 /// Implementation of the face authentication repository
 /// This class orchestrates between local and remote data sources
@@ -76,8 +77,10 @@ class FaceAuthRepositoryImpl implements FaceAuthRepository {
       // Step 7: Convert DTO to Entity and return
       final authResponse = FaceAuthResponseMapper.toEntity(authResponseDto);
       return Right(authResponse);
+    } on DataException catch (e) {
+      return Left(_handleDataException(e));
     } on Exception catch (e) {
-      return Left(_handleException(e));
+      return Left(UnknownFailure(e.toString()));
     }
   }
 
@@ -118,8 +121,10 @@ class FaceAuthRepositoryImpl implements FaceAuthRepository {
       // Step 5: Convert DTO to Entity and return
       final enrollment = FaceEnrollmentMapper.toEntity(enrollmentDto);
       return Right(enrollment);
+    } on DataException catch (e) {
+      return Left(_handleDataException(e));
     } on Exception catch (e) {
-      return Left(_handleException(e));
+      return Left(UnknownFailure(e.toString()));
     }
   }
 
@@ -128,8 +133,10 @@ class FaceAuthRepositoryImpl implements FaceAuthRepository {
     try {
       final isEnrolled = await localDataSource.isFaceEnrolled(userId);
       return Right(isEnrolled);
+    } on DataException catch (e) {
+      return Left(_handleDataException(e));
     } on Exception catch (e) {
-      return Left(_handleException(e));
+      return Left(UnknownFailure(e.toString()));
     }
   }
 
@@ -149,8 +156,10 @@ class FaceAuthRepositoryImpl implements FaceAuthRepository {
       final remoteEnrollment = await remoteDataSource.getEnrollment(userId);
       final enrollment = FaceEnrollmentMapper.toEntity(remoteEnrollment);
       return Right(enrollment);
+    } on DataException catch (e) {
+      return Left(_handleDataException(e));
     } on Exception catch (e) {
-      return Left(_handleException(e));
+      return Left(UnknownFailure(e.toString()));
     }
   }
 
@@ -165,8 +174,10 @@ class FaceAuthRepositoryImpl implements FaceAuthRepository {
       ]);
 
       return const Right(null);
+    } on DataException catch (e) {
+      return Left(_handleDataException(e));
     } on Exception catch (e) {
-      return Left(_handleException(e));
+      return Left(UnknownFailure(e.toString()));
     }
   }
 
@@ -175,8 +186,10 @@ class FaceAuthRepositoryImpl implements FaceAuthRepository {
     try {
       final isAvailable = await localDataSource.isBiometricAvailable();
       return Right(isAvailable);
+    } on DataException catch (e) {
+      return Left(_handleDataException(e));
     } on Exception catch (e) {
-      return Left(_handleException(e));
+      return Left(UnknownFailure(e.toString()));
     }
   }
 
@@ -185,8 +198,10 @@ class FaceAuthRepositoryImpl implements FaceAuthRepository {
     try {
       final isValid = await remoteDataSource.verifySessionToken(sessionToken);
       return Right(isValid);
+    } on DataException catch (e) {
+      return Left(_handleDataException(e));
     } on Exception catch (e) {
-      return Left(_handleException(e));
+      return Left(UnknownFailure(e.toString()));
     }
   }
 
@@ -195,37 +210,48 @@ class FaceAuthRepositoryImpl implements FaceAuthRepository {
     try {
       await remoteDataSource.invalidateSession(sessionToken);
       return const Right(null);
+    } on DataException catch (e) {
+      return Left(_handleDataException(e));
     } on Exception catch (e) {
-      return Left(_handleException(e));
+      return Left(UnknownFailure(e.toString()));
     }
   }
 
-  /// Handle exceptions and convert to domain failures
-  Failure _handleException(Exception exception) {
-    final message = exception.toString();
-
-    if (message.contains('Biometric not available') ||
-        message.contains('biometric availability')) {
-      return BiometricNotAvailableFailure(message);
-    } else if (message.contains('Face not enrolled') ||
-        message.contains('No active enrollment')) {
-      return FaceNotEnrolledException(message);
-    } else if (message.contains('Biometric authentication failed') ||
-        message.contains('authentication failed')) {
-      return BiometricAuthenticationFailure(message);
-    } else if (message.contains('enrollment failed') ||
-        message.contains('register enrollment')) {
-      return FaceEnrollmentFailure(message);
-    } else if (message.contains('verification failed') ||
-        message.contains('verify authentication')) {
-      return FaceVerificationFailure(message);
-    } else if (message.contains('SocketException') ||
-        message.contains('NetworkException')) {
-      return const NetworkFailure('Network error occurred');
-    } else if (message.contains('401') || message.contains('403')) {
-      return const AuthenticationFailure('Authentication failed');
+  /// Handle data exceptions and convert to domain failures
+  Failure _handleDataException(DataException exception) {
+    if (exception is BiometricException) {
+      switch (exception.errorType) {
+        case BiometricErrorType.notAvailable:
+          return BiometricNotAvailableFailure(exception.message);
+        case BiometricErrorType.notEnrolled:
+          return FaceNotEnrolledException(exception.message);
+        case BiometricErrorType.authenticationFailed:
+        case BiometricErrorType.cancelled:
+        case BiometricErrorType.lockout:
+          return BiometricAuthenticationFailure(exception.message);
+        case BiometricErrorType.hardwareError:
+          return BiometricNotAvailableFailure(exception.message);
+      }
+    } else if (exception is DataNotFoundException) {
+      return FaceNotEnrolledException(exception.message);
+    } else if (exception is StorageException) {
+      return UnknownFailure('Storage error: ${exception.message}');
+    } else if (exception is FirestoreException) {
+      if (exception.operation?.contains('enroll') == true) {
+        return FaceEnrollmentFailure(exception.message);
+      } else if (exception.operation?.contains('verify') == true ||
+          exception.operation?.contains('authentication') == true) {
+        return FaceVerificationFailure(exception.message);
+      }
+      return ServerFailure('Database error: ${exception.message}');
+    } else if (exception is ParseException) {
+      return UnknownFailure('Data parsing error: ${exception.message}');
+    } else if (exception is NetworkException) {
+      return NetworkFailure(exception.message);
+    } else if (exception is AuthenticationException) {
+      return AuthenticationFailure(exception.message);
     } else {
-      return UnknownFailure(message);
+      return UnknownFailure(exception.message);
     }
   }
 }

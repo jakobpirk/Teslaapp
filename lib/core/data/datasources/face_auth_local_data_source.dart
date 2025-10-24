@@ -3,8 +3,9 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:local_auth_android/local_auth_android.dart';
 import 'package:local_auth_ios/local_auth_ios.dart';
-import '../models/face_enrollment_dto.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../models/face_enrollment_dto.dart';
+import '../exceptions/data_exceptions.dart';
 
 /// Abstract interface for local face authentication operations
 abstract class FaceAuthLocalDataSource {
@@ -67,7 +68,11 @@ class FaceAuthLocalDataSourceImpl implements FaceAuthLocalDataSource {
       // Check if face or fingerprint is available
       return availableBiometrics.isNotEmpty;
     } catch (e) {
-      throw Exception('Failed to check biometric availability: $e');
+      throw BiometricException(
+        'Failed to check biometric availability',
+        BiometricErrorType.hardwareError,
+        e,
+      );
     }
   }
 
@@ -78,7 +83,11 @@ class FaceAuthLocalDataSourceImpl implements FaceAuthLocalDataSource {
           await secureStorage.read(key: '$_enrollmentKeyPrefix$userId');
       return enrollmentData != null;
     } catch (e) {
-      throw Exception('Failed to check face enrollment: $e');
+      throw StorageException(
+        'Failed to check face enrollment',
+        e,
+        '$_enrollmentKeyPrefix$userId',
+      );
     }
   }
 
@@ -106,7 +115,27 @@ class FaceAuthLocalDataSourceImpl implements FaceAuthLocalDataSource {
 
       return didAuthenticate;
     } catch (e) {
-      throw Exception('Biometric authentication failed: $e');
+      // Check for specific error types from the error message
+      final errorMessage = e.toString().toLowerCase();
+      BiometricErrorType errorType;
+
+      if (errorMessage.contains('cancel')) {
+        errorType = BiometricErrorType.cancelled;
+      } else if (errorMessage.contains('lockout') || errorMessage.contains('locked')) {
+        errorType = BiometricErrorType.lockout;
+      } else if (errorMessage.contains('not available')) {
+        errorType = BiometricErrorType.notAvailable;
+      } else if (errorMessage.contains('not enrolled')) {
+        errorType = BiometricErrorType.notEnrolled;
+      } else {
+        errorType = BiometricErrorType.authenticationFailed;
+      }
+
+      throw BiometricException(
+        'Biometric authentication failed',
+        errorType,
+        e,
+      );
     }
   }
 
@@ -121,7 +150,11 @@ class FaceAuthLocalDataSourceImpl implements FaceAuthLocalDataSource {
         value: enrollmentString,
       );
     } catch (e) {
-      throw Exception('Failed to store enrollment: $e');
+      throw StorageException(
+        'Failed to store enrollment',
+        e,
+        '$_enrollmentKeyPrefix${enrollment.userId}',
+      );
     }
   }
 
@@ -135,11 +168,25 @@ class FaceAuthLocalDataSourceImpl implements FaceAuthLocalDataSource {
         return null;
       }
 
-      // Parse the stored JSON string back to DTO
-      final enrollmentJson = jsonDecode(enrollmentString) as Map<String, dynamic>;
-      return FaceEnrollmentDto.fromJson(enrollmentJson);
+      try {
+        // Parse the stored JSON string back to DTO
+        final enrollmentJson = jsonDecode(enrollmentString) as Map<String, dynamic>;
+        return FaceEnrollmentDto.fromJson(enrollmentJson);
+      } catch (e) {
+        throw ParseException(
+          'Failed to parse enrollment data',
+          e,
+        );
+      }
     } catch (e) {
-      throw Exception('Failed to get enrollment: $e');
+      if (e is ParseException) {
+        rethrow;
+      }
+      throw StorageException(
+        'Failed to get enrollment',
+        e,
+        '$_enrollmentKeyPrefix$userId',
+      );
     }
   }
 
@@ -148,7 +195,11 @@ class FaceAuthLocalDataSourceImpl implements FaceAuthLocalDataSource {
     try {
       await secureStorage.delete(key: '$_enrollmentKeyPrefix$userId');
     } catch (e) {
-      throw Exception('Failed to delete enrollment: $e');
+      throw StorageException(
+        'Failed to delete enrollment',
+        e,
+        '$_enrollmentKeyPrefix$userId',
+      );
     }
   }
 
@@ -160,7 +211,11 @@ class FaceAuthLocalDataSourceImpl implements FaceAuthLocalDataSource {
         value: token,
       );
     } catch (e) {
-      throw Exception('Failed to store session token: $e');
+      throw StorageException(
+        'Failed to store session token',
+        e,
+        '$_sessionTokenKeyPrefix$userId',
+      );
     }
   }
 
@@ -169,7 +224,11 @@ class FaceAuthLocalDataSourceImpl implements FaceAuthLocalDataSource {
     try {
       return await secureStorage.read(key: '$_sessionTokenKeyPrefix$userId');
     } catch (e) {
-      throw Exception('Failed to get session token: $e');
+      throw StorageException(
+        'Failed to get session token',
+        e,
+        '$_sessionTokenKeyPrefix$userId',
+      );
     }
   }
 
@@ -178,7 +237,11 @@ class FaceAuthLocalDataSourceImpl implements FaceAuthLocalDataSource {
     try {
       await secureStorage.delete(key: '$_sessionTokenKeyPrefix$userId');
     } catch (e) {
-      throw Exception('Failed to delete session token: $e');
+      throw StorageException(
+        'Failed to delete session token',
+        e,
+        '$_sessionTokenKeyPrefix$userId',
+      );
     }
   }
 }

@@ -4,6 +4,7 @@ import '../../domain/failures/failure.dart';
 import '../../domain/repositories/charging_stats_repository.dart';
 import '../datasources/charging_stats_remote_datasource.dart';
 import '../mappers/charging_session_mapper.dart';
+import '../exceptions/data_exceptions.dart';
 
 class ChargingStatsRepositoryImpl implements ChargingStatsRepository {
   final ChargingStatsRemoteDataSource remoteDataSource;
@@ -17,8 +18,10 @@ class ChargingStatsRepositoryImpl implements ChargingStatsRepository {
       final sessions = await remoteDataSource.getChargingSessions(vehicleId);
       return Right(
           sessions.map((dto) => ChargingSessionMapper.toEntity(dto)).toList());
+    } on DataException catch (e) {
+      return Left(_handleDataException(e));
     } on Exception catch (e) {
-      return Left(ServerFailure(e.toString()));
+      return Left(UnknownFailure(e.toString()));
     }
   }
 
@@ -37,8 +40,10 @@ class ChargingStatsRepositoryImpl implements ChargingStatsRepository {
       );
       return Right(
           sessions.map((dto) => ChargingSessionMapper.toEntity(dto)).toList());
+    } on DataException catch (e) {
+      return Left(_handleDataException(e));
     } on Exception catch (e) {
-      return Left(ServerFailure(e.toString()));
+      return Left(UnknownFailure(e.toString()));
     }
   }
 
@@ -48,8 +53,10 @@ class ChargingStatsRepositoryImpl implements ChargingStatsRepository {
     try {
       final session = await remoteDataSource.getChargingSession(sessionId);
       return Right(ChargingSessionMapper.toEntity(session));
+    } on DataException catch (e) {
+      return Left(_handleDataException(e));
     } on Exception catch (e) {
-      return Left(ServerFailure(e.toString()));
+      return Left(UnknownFailure(e.toString()));
     }
   }
 
@@ -62,8 +69,10 @@ class ChargingStatsRepositoryImpl implements ChargingStatsRepository {
       final dto = ChargingSessionMapper.toDto(session);
       await remoteDataSource.saveChargingSession(vehicleId, dto);
       return const Right(null);
+    } on DataException catch (e) {
+      return Left(_handleDataException(e));
     } on Exception catch (e) {
-      return Left(ServerFailure(e.toString()));
+      return Left(UnknownFailure(e.toString()));
     }
   }
 
@@ -74,8 +83,10 @@ class ChargingStatsRepositoryImpl implements ChargingStatsRepository {
       final dto = ChargingSessionMapper.toDto(session);
       await remoteDataSource.updateChargingSession(dto);
       return const Right(null);
+    } on DataException catch (e) {
+      return Left(_handleDataException(e));
     } on Exception catch (e) {
-      return Left(ServerFailure(e.toString()));
+      return Left(UnknownFailure(e.toString()));
     }
   }
 
@@ -84,8 +95,10 @@ class ChargingStatsRepositoryImpl implements ChargingStatsRepository {
     try {
       await remoteDataSource.deleteChargingSession(sessionId);
       return const Right(null);
+    } on DataException catch (e) {
+      return Left(_handleDataException(e));
     } on Exception catch (e) {
-      return Left(ServerFailure(e.toString()));
+      return Left(UnknownFailure(e.toString()));
     }
   }
 
@@ -98,8 +111,23 @@ class ChargingStatsRepositoryImpl implements ChargingStatsRepository {
         return const Right(null);
       }
       return Right(ChargingSessionMapper.toEntity(session));
+    } on DataException catch (e) {
+      return Left(_handleDataException(e));
     } on Exception catch (e) {
-      return Left(ServerFailure(e.toString()));
+      return Left(UnknownFailure(e.toString()));
+    }
+  }
+
+  /// Handle data exceptions and convert to domain failures
+  Failure _handleDataException(DataException exception) {
+    if (exception is FirestoreException) {
+      return ServerFailure('Database error: ${exception.message}');
+    } else if (exception is DataNotFoundException) {
+      return ServerFailure('Data not found: ${exception.message}');
+    } else if (exception is NetworkException) {
+      return NetworkFailure(exception.message);
+    } else {
+      return UnknownFailure(exception.message);
     }
   }
 }
