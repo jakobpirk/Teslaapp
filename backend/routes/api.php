@@ -4,6 +4,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\ChargingSessionController;
 use App\Http\Controllers\Api\FaceAuthController;
+use App\Http\Controllers\Api\PricingHistoryController;
+use App\Http\Controllers\Api\ChargingRecommendationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -41,5 +43,23 @@ Route::prefix('v1')->group(function () {
         Route::post('/verify', [FaceAuthController::class, 'verifyAuthentication']);
         Route::post('/sessions/verify', [FaceAuthController::class, 'verifySessionToken']);
         Route::post('/sessions/invalidate', [FaceAuthController::class, 'invalidateSession']);
+    });
+
+    // Pricing History Routes
+    Route::prefix('pricing')->group(function () {
+        Route::get('/', [PricingHistoryController::class, 'index']);
+        Route::get('/current', [PricingHistoryController::class, 'current']);
+        Route::get('/today-tomorrow', [PricingHistoryController::class, 'todayAndTomorrow']);
+        Route::get('/average', [PricingHistoryController::class, 'average']);
+    });
+
+    // Charging Recommendation Routes
+    Route::prefix('charging-recommendations')->group(function () {
+        Route::post('/vehicle/{vehicleId}/generate', [ChargingRecommendationController::class, 'generate']);
+        Route::get('/vehicle/{vehicleId}/latest', [ChargingRecommendationController::class, 'latest']);
+        Route::get('/vehicle/{vehicleId}', [ChargingRecommendationController::class, 'index']);
+        Route::get('/{id}', [ChargingRecommendationController::class, 'show']);
+        Route::post('/{id}/executed', [ChargingRecommendationController::class, 'markExecuted']);
+        Route::patch('/{id}/status', [ChargingRecommendationController::class, 'updateStatus']);
     });
 });

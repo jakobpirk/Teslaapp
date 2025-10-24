@@ -6,6 +6,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'core/di/injection_container.dart';
 import 'features/vehicle/presentation/providers/vehicle_provider.dart';
 import 'features/charging_stats/presentation/providers/charging_stats_provider.dart';
+import 'features/charging_stats/presentation/providers/smart_charging_provider.dart';
 import 'screens/home_screen.dart';
 import 'utils/app_theme.dart';
 
@@ -50,6 +51,7 @@ class TessieApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => sl<VehicleProvider>()),
         ChangeNotifierProvider(create: (_) => sl<ChargingStatsProvider>()),
+        ChangeNotifierProvider(create: (_) => SmartChargingProvider()),
       ],
       child: MaterialApp(
         title: 'Tessie',
