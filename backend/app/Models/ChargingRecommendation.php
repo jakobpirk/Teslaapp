@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ChargingRecommendation extends Model
 {
@@ -39,6 +40,14 @@ class ChargingRecommendation extends Model
 
     public $incrementing = false;
     protected $keyType = 'string';
+
+    /**
+     * Get the vehicle that owns this charging recommendation.
+     */
+    public function vehicle(): BelongsTo
+    {
+        return $this->belongsTo(Vehicle::class);
+    }
 
     /**
      * Get the latest recommendation for a vehicle
