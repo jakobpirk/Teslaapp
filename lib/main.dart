@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'core/di/injection_container.dart';
 import 'features/vehicle/presentation/providers/vehicle_provider.dart';
+import 'features/charging_stats/presentation/providers/charging_stats_provider.dart';
 import 'screens/home_screen.dart';
 import 'utils/app_theme.dart';
 
@@ -16,6 +18,15 @@ void main() async {
   } catch (e) {
     // If .env file doesn't exist, use default values
     print('Warning: .env file not found. Using default values.');
+  }
+
+  // Initialize Firebase (optional - will fall back to mock data if not configured)
+  try {
+    await Firebase.initializeApp();
+    print('Firebase initialized successfully');
+  } catch (e) {
+    print('Firebase initialization skipped: $e');
+    print('Using mock data mode for charging stats');
   }
 
   // Initialize dependency injection
@@ -35,8 +46,11 @@ class TessieApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => sl<VehicleProvider>(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => sl<VehicleProvider>()),
+        ChangeNotifierProvider(create: (_) => sl<ChargingStatsProvider>()),
+      ],
       child: MaterialApp(
         title: 'Tessie',
         theme: AppTheme.darkTheme,

@@ -26,6 +26,13 @@ dependencies:
   # Storage
   shared_preferences: ^2.2.2
 
+  # Firebase
+  firebase_core: ^2.24.2
+  cloud_firestore: ^4.14.0
+
+  # Charts
+  fl_chart: ^0.66.0
+
   # Utils
   intl: ^0.19.0
   flutter_dotenv: ^5.1.0

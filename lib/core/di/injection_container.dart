@@ -1,13 +1,17 @@
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 // Data layer
 import '../data/datasources/vehicle_remote_data_source.dart';
 import '../data/repositories/vehicle_repository_impl.dart';
+import '../data/datasources/charging_stats_remote_datasource.dart';
+import '../data/repositories/charging_stats_repository_impl.dart';
 
 // Domain layer
 import '../domain/repositories/vehicle_repository.dart';
+import '../domain/repositories/charging_stats_repository.dart';
 import '../domain/usecases/get_vehicle_state.dart';
 import '../domain/usecases/wake_vehicle.dart';
 import '../domain/usecases/vehicle_lock_operations.dart';
@@ -16,9 +20,12 @@ import '../domain/usecases/climate_operations.dart';
 import '../domain/usecases/charging_operations.dart';
 import '../domain/usecases/security_operations.dart';
 import '../domain/usecases/vehicle_access_operations.dart';
+import '../domain/usecases/get_charging_sessions.dart';
+import '../domain/usecases/save_charging_session.dart';
 
 // Presentation layer
 import '../../features/vehicle/presentation/providers/vehicle_provider.dart';
+import '../../features/charging_stats/presentation/providers/charging_stats_provider.dart';
 
 final sl = GetIt.instance;
 
@@ -96,6 +103,35 @@ Future<void> initializeDependencies() async {
       openTrunk: sl(),
       ventWindows: sl(),
       closeWindows: sl(),
+    ),
+  );
+
+  // Charging Stats - Firestore
+  sl.registerLazySingleton(() => FirebaseFirestore.instance);
+
+  // Charging Stats - Data sources
+  sl.registerLazySingleton<ChargingStatsRemoteDataSource>(
+    () => ChargingStatsRemoteDataSourceImpl(
+      firestore: sl(),
+    ),
+  );
+
+  // Charging Stats - Repository
+  sl.registerLazySingleton<ChargingStatsRepository>(
+    () => ChargingStatsRepositoryImpl(
+      remoteDataSource: sl(),
+    ),
+  );
+
+  // Charging Stats - Use cases
+  sl.registerLazySingleton(() => GetChargingSessions(sl()));
+  sl.registerLazySingleton(() => SaveChargingSession(sl()));
+
+  // Charging Stats - Provider
+  sl.registerFactory(
+    () => ChargingStatsProvider(
+      getChargingSessions: sl(),
+      saveChargingSession: sl(),
     ),
   );
 }
