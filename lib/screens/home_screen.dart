@@ -7,6 +7,7 @@ import '../widgets/status_card.dart';
 import '../widgets/action_button.dart';
 import 'climate_screen.dart';
 import 'charging_screen.dart';
+import 'charging_dashboard_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -249,6 +250,17 @@ class _HomeScreenState extends State<HomeScreen> {
           () => Navigator.push(
             context,
             MaterialPageRoute(builder: (_) => const ChargingScreen()),
+          ),
+        ),
+        const SizedBox(height: 12),
+        _buildSectionCard(
+          'Charging Dashboard',
+          'View stats, history & pricing',
+          Icons.analytics,
+          AppTheme.accentYellow,
+          () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const ChargingDashboardScreen()),
           ),
         ),
         const SizedBox(height: 12),

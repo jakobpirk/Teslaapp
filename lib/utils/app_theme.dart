@@ -4,7 +4,9 @@ import 'package:google_fonts/google_fonts.dart';
 class AppTheme {
   static const Color primaryBlue = Color(0xFF3B82F6);
   static const Color darkBackground = Color(0xFF0F172A);
+  static const Color backgroundDark = Color(0xFF0F172A);
   static const Color cardBackground = Color(0xFF1E293B);
+  static const Color cardDark = Color(0xFF1E293B);
   static const Color accentGreen = Color(0xFF10B981);
   static const Color accentRed = Color(0xFFEF4444);
   static const Color accentYellow = Color(0xFFF59E0B);
@@ -21,7 +23,6 @@ class AppTheme {
         primary: primaryBlue,
         secondary: accentGreen,
         surface: cardBackground,
-        background: darkBackground,
       ),
       textTheme: GoogleFonts.interTextTheme(
         ThemeData.dark().textTheme.apply(
@@ -29,7 +30,7 @@ class AppTheme {
               displayColor: textPrimary,
             ),
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: cardBackground,
         elevation: 0,
         shape: RoundedRectangleBorder(
