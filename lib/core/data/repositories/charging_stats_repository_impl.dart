@@ -2,11 +2,11 @@ import 'package:dartz/dartz.dart';
 import '../../domain/entities/charging_session_entity.dart';
 import '../../domain/failures/failure.dart';
 import '../../domain/repositories/charging_stats_repository.dart';
-import '../datasources/charging_stats_remote_datasource.dart';
+import '../datasources/charging_stats_http_datasource.dart';
 import '../mappers/charging_session_mapper.dart';
 
 class ChargingStatsRepositoryImpl implements ChargingStatsRepository {
-  final ChargingStatsRemoteDataSource remoteDataSource;
+  final ChargingStatsHttpDataSource remoteDataSource;
 
   ChargingStatsRepositoryImpl({required this.remoteDataSource});
 
