@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ChargingSessionController;
 use App\Http\Controllers\Api\FaceAuthController;
 use App\Http\Controllers\Api\PricingHistoryController;
@@ -21,6 +22,21 @@ Route::prefix('v1')->group(function () {
             'status' => 'ok',
             'timestamp' => now()->toIso8601String(),
         ]);
+    });
+
+    // Authentication Routes (Public)
+    Route::prefix('auth')->group(function () {
+        Route::post('/register', [AuthController::class, 'register']);
+        Route::post('/login', [AuthController::class, 'login']);
+        Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
+        Route::post('/verify-reset-code', [AuthController::class, 'verifyResetCode']);
+        Route::post('/reset-password', [AuthController::class, 'resetPassword']);
+    });
+
+    // Protected Authentication Routes
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::post('/auth/logout', [AuthController::class, 'logout']);
+        Route::get('/auth/me', [AuthController::class, 'me']);
     });
 
     // Charging Sessions Routes
