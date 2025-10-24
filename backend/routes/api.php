@@ -7,6 +7,9 @@ use App\Http\Controllers\Api\ChargingSessionController;
 use App\Http\Controllers\Api\FaceAuthController;
 use App\Http\Controllers\Api\PricingHistoryController;
 use App\Http\Controllers\Api\ChargingRecommendationController;
+use App\Http\Controllers\VehicleController;
+use App\Http\Controllers\ElectricityProviderController;
+use App\Http\Controllers\UserSettingsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -77,5 +80,42 @@ Route::prefix('v1')->group(function () {
         Route::get('/{id}', [ChargingRecommendationController::class, 'show']);
         Route::post('/{id}/executed', [ChargingRecommendationController::class, 'markExecuted']);
         Route::patch('/{id}/status', [ChargingRecommendationController::class, 'updateStatus']);
+    });
+
+    // Vehicle Routes (Protected)
+    Route::middleware('auth:sanctum')->prefix('vehicles')->group(function () {
+        Route::get('/', [VehicleController::class, 'index']);
+        Route::get('/active', [VehicleController::class, 'active']);
+        Route::post('/', [VehicleController::class, 'store']);
+        Route::get('/{id}', [VehicleController::class, 'show']);
+        Route::put('/{id}', [VehicleController::class, 'update']);
+        Route::delete('/{id}', [VehicleController::class, 'destroy']);
+        Route::delete('/{id}/force', [VehicleController::class, 'forceDestroy']);
+        Route::get('/{id}/statistics', [VehicleController::class, 'statistics']);
+    });
+
+    // Electricity Provider Routes (Public for listing, some endpoints protected)
+    Route::prefix('electricity-providers')->group(function () {
+        Route::get('/', [ElectricityProviderController::class, 'index']);
+        Route::get('/country/{country}', [ElectricityProviderController::class, 'byCountry']);
+        Route::get('/{id}', [ElectricityProviderController::class, 'show']);
+        Route::get('/{id}/pricing/current', [ElectricityProviderController::class, 'getCurrentPricing']);
+        Route::get('/{id}/pricing/forecast', [ElectricityProviderController::class, 'getPricingForecast']);
+
+        // Protected routes for updating pricing
+        Route::middleware('auth:sanctum')->group(function () {
+            Route::post('/{id}/pricing/update', [ElectricityProviderController::class, 'updatePricing']);
+            Route::post('/{id}/pricing/forecast/update', [ElectricityProviderController::class, 'updateForecast']);
+        });
+    });
+
+    // User Settings Routes (Protected)
+    Route::middleware('auth:sanctum')->prefix('user')->group(function () {
+        Route::get('/settings', [UserSettingsController::class, 'index']);
+        Route::get('/profile', [UserSettingsController::class, 'profile']);
+        Route::post('/settings/tessie-api-key', [UserSettingsController::class, 'updateTessieApiKey']);
+        Route::delete('/settings/tessie-api-key', [UserSettingsController::class, 'removeTessieApiKey']);
+        Route::post('/settings/electricity-provider', [UserSettingsController::class, 'updateElectricityProvider']);
+        Route::post('/settings/location', [UserSettingsController::class, 'updateLocation']);
     });
 });

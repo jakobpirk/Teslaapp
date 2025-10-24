@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ChargingSession extends Model
 {
@@ -36,4 +37,20 @@ class ChargingSession extends Model
 
     public $incrementing = false;
     protected $keyType = 'string';
+
+    /**
+     * Get the vehicle that owns this charging session.
+     */
+    public function vehicle(): BelongsTo
+    {
+        return $this->belongsTo(Vehicle::class);
+    }
+
+    /**
+     * Get the user who owns the vehicle (via vehicle relationship).
+     */
+    public function user(): BelongsTo
+    {
+        return $this->vehicle->user();
+    }
 }
