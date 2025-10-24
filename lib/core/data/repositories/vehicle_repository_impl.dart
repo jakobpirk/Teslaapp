@@ -265,9 +265,9 @@ class VehicleRepositoryImpl implements VehicleRepository {
       return ServerFailure(message);
     } else if (message.contains('SocketException') ||
         message.contains('NetworkException')) {
-      return NetworkFailure('Network error occurred');
+      return const NetworkFailure('Network error occurred');
     } else if (message.contains('401') || message.contains('403')) {
-      return AuthenticationFailure('Authentication failed');
+      return const AuthenticationFailure('Authentication failed');
     } else {
       return UnknownFailure(message);
     }

@@ -1,9 +1,9 @@
+import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:local_auth_android/local_auth_android.dart';
 import 'package:local_auth_ios/local_auth_ios.dart';
 import '../models/face_enrollment_dto.dart';
-import '../models/face_auth_response_dto.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 /// Abstract interface for local face authentication operations
@@ -114,7 +114,7 @@ class FaceAuthLocalDataSourceImpl implements FaceAuthLocalDataSource {
   Future<void> storeEnrollment(FaceEnrollmentDto enrollment) async {
     try {
       final enrollmentJson = enrollment.toJson();
-      final enrollmentString = enrollmentJson.toString();
+      final enrollmentString = jsonEncode(enrollmentJson);
 
       await secureStorage.write(
         key: '$_enrollmentKeyPrefix${enrollment.userId}',
@@ -135,16 +135,9 @@ class FaceAuthLocalDataSourceImpl implements FaceAuthLocalDataSource {
         return null;
       }
 
-      // Parse the stored string back to DTO
-      // In a real app, you'd use proper JSON parsing
-      // For this implementation, we'll create a basic enrollment
-      return FaceEnrollmentDto(
-        userId: userId,
-        enrollmentId: 'local_enrollment_$userId',
-        enrolledAt: Timestamp.now(),
-        isActive: true,
-        biometricType: 'face',
-      );
+      // Parse the stored JSON string back to DTO
+      final enrollmentJson = jsonDecode(enrollmentString) as Map<String, dynamic>;
+      return FaceEnrollmentDto.fromJson(enrollmentJson);
     } catch (e) {
       throw Exception('Failed to get enrollment: $e');
     }

@@ -17,7 +17,7 @@ class ChargingStatsRepositoryImpl implements ChargingStatsRepository {
       final sessions = await remoteDataSource.getChargingSessions(vehicleId);
       return Right(
           sessions.map((dto) => ChargingSessionMapper.toEntity(dto)).toList());
-    } catch (e) {
+    } on Exception catch (e) {
       return Left(ServerFailure(e.toString()));
     }
   }
@@ -37,7 +37,7 @@ class ChargingStatsRepositoryImpl implements ChargingStatsRepository {
       );
       return Right(
           sessions.map((dto) => ChargingSessionMapper.toEntity(dto)).toList());
-    } catch (e) {
+    } on Exception catch (e) {
       return Left(ServerFailure(e.toString()));
     }
   }
@@ -48,7 +48,7 @@ class ChargingStatsRepositoryImpl implements ChargingStatsRepository {
     try {
       final session = await remoteDataSource.getChargingSession(sessionId);
       return Right(ChargingSessionMapper.toEntity(session));
-    } catch (e) {
+    } on Exception catch (e) {
       return Left(ServerFailure(e.toString()));
     }
   }
@@ -62,7 +62,7 @@ class ChargingStatsRepositoryImpl implements ChargingStatsRepository {
       final dto = ChargingSessionMapper.toDto(session);
       await remoteDataSource.saveChargingSession(vehicleId, dto);
       return const Right(null);
-    } catch (e) {
+    } on Exception catch (e) {
       return Left(ServerFailure(e.toString()));
     }
   }
@@ -74,7 +74,7 @@ class ChargingStatsRepositoryImpl implements ChargingStatsRepository {
       final dto = ChargingSessionMapper.toDto(session);
       await remoteDataSource.updateChargingSession(dto);
       return const Right(null);
-    } catch (e) {
+    } on Exception catch (e) {
       return Left(ServerFailure(e.toString()));
     }
   }
@@ -84,7 +84,7 @@ class ChargingStatsRepositoryImpl implements ChargingStatsRepository {
     try {
       await remoteDataSource.deleteChargingSession(sessionId);
       return const Right(null);
-    } catch (e) {
+    } on Exception catch (e) {
       return Left(ServerFailure(e.toString()));
     }
   }
@@ -98,7 +98,7 @@ class ChargingStatsRepositoryImpl implements ChargingStatsRepository {
         return const Right(null);
       }
       return Right(ChargingSessionMapper.toEntity(session));
-    } catch (e) {
+    } on Exception catch (e) {
       return Left(ServerFailure(e.toString()));
     }
   }
