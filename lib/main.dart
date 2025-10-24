@@ -7,6 +7,8 @@ import 'core/di/injection_container.dart';
 import 'features/vehicle/presentation/providers/vehicle_provider.dart';
 import 'features/charging_stats/presentation/providers/charging_stats_provider.dart';
 import 'features/charging_stats/presentation/providers/smart_charging_provider.dart';
+import 'features/auth/presentation/providers/auth_provider.dart';
+import 'features/auth/presentation/screens/login_screen.dart';
 import 'screens/home_screen.dart';
 import 'utils/app_theme.dart';
 
@@ -49,6 +51,7 @@ class TessieApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        ChangeNotifierProvider(create: (_) => sl<AuthProvider>()),
         ChangeNotifierProvider(create: (_) => sl<VehicleProvider>()),
         ChangeNotifierProvider(create: (_) => sl<ChargingStatsProvider>()),
         ChangeNotifierProvider(create: (_) => SmartChargingProvider()),
@@ -100,13 +103,29 @@ class _SplashScreenState extends State<SplashScreen>
 
     _controller.forward();
 
-    // Navigate to home screen after animation
-    Future.delayed(const Duration(seconds: 2), () {
+    // Check authentication and navigate appropriately
+    _checkAuthAndNavigate();
+  }
+
+  Future<void> _checkAuthAndNavigate() async {
+    final authProvider = context.read<AuthProvider>();
+    await authProvider.initializeAuth();
+
+    await Future.delayed(const Duration(seconds: 2));
+
+    if (!mounted) return;
+
+    if (authProvider.isAuthenticated) {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const HomeScreen()),
       );
-    });
+    } else {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
+      );
+    }
   }
 
   @override

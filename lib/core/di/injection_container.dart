@@ -13,11 +13,17 @@ import '../data/repositories/charging_stats_repository_impl.dart';
 import '../data/datasources/face_auth_local_data_source.dart';
 import '../data/datasources/face_auth_http_data_source.dart';
 import '../data/repositories/face_auth_repository_impl.dart';
+import '../data/datasources/auth_remote_data_source.dart';
+import '../data/datasources/auth_http_data_source.dart';
+import '../data/datasources/auth_local_data_source.dart';
+import '../data/datasources/auth_secure_storage_data_source.dart';
+import '../data/repositories/auth_repository_impl.dart';
 
 // Domain layer
 import '../domain/repositories/vehicle_repository.dart';
 import '../domain/repositories/charging_stats_repository.dart';
 import '../domain/repositories/face_auth_repository.dart';
+import '../domain/repositories/auth_repository.dart';
 import '../domain/usecases/get_vehicle_state.dart';
 import '../domain/usecases/wake_vehicle.dart';
 import '../domain/usecases/vehicle_lock_operations.dart';
@@ -30,10 +36,16 @@ import '../domain/usecases/get_charging_sessions.dart';
 import '../domain/usecases/save_charging_session.dart';
 import '../domain/usecases/authenticate_with_face.dart';
 import '../domain/usecases/enroll_face_biometric.dart';
+import '../domain/usecases/login_user.dart';
+import '../domain/usecases/register_user.dart';
+import '../domain/usecases/logout_user.dart';
+import '../domain/usecases/forgot_password.dart';
+import '../domain/usecases/reset_password.dart';
 
 // Presentation layer
 import '../../features/vehicle/presentation/providers/vehicle_provider.dart';
 import '../../features/charging_stats/presentation/providers/charging_stats_provider.dart';
+import '../../features/auth/presentation/providers/auth_provider.dart';
 
 final sl = GetIt.instance;
 
@@ -191,4 +203,40 @@ Future<void> initializeDependencies() async {
   // Face Authentication - Use cases
   sl.registerLazySingleton(() => AuthenticateWithFace(sl()));
   sl.registerLazySingleton(() => EnrollFaceBiometric(sl()));
+
+  // Authentication - Data sources
+  sl.registerLazySingleton<AuthRemoteDataSource>(
+    () => AuthHttpDataSource(client: sl()),
+  );
+
+  sl.registerLazySingleton<AuthLocalDataSource>(
+    () => AuthSecureStorageDataSource(storage: sl()),
+  );
+
+  // Authentication - Repository
+  sl.registerLazySingleton<AuthRepository>(
+    () => AuthRepositoryImpl(
+      remoteDataSource: sl(),
+      localDataSource: sl(),
+    ),
+  );
+
+  // Authentication - Use cases
+  sl.registerLazySingleton(() => LoginUser(sl()));
+  sl.registerLazySingleton(() => RegisterUser(sl()));
+  sl.registerLazySingleton(() => LogoutUser(sl()));
+  sl.registerLazySingleton(() => ForgotPassword(sl()));
+  sl.registerLazySingleton(() => ResetPassword(sl()));
+
+  // Authentication - Provider
+  sl.registerFactory(
+    () => AuthProvider(
+      loginUseCase: sl(),
+      registerUseCase: sl(),
+      logoutUseCase: sl(),
+      forgotPasswordUseCase: sl(),
+      resetPasswordUseCase: sl(),
+      authRepository: sl(),
+    ),
+  );
 }
