@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../features/vehicle/presentation/providers/vehicle_provider.dart';
+import '../features/charging_stats/presentation/providers/smart_charging_provider.dart';
 import '../utils/app_theme.dart';
 
 class ChargingScreen extends StatefulWidget {
@@ -13,6 +14,29 @@ class ChargingScreen extends StatefulWidget {
 
 class _ChargingScreenState extends State<ChargingScreen> {
   double _chargeLimit = 80.0;
+  bool _autoChargeEnabled = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Load smart charging data when screen opens
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadSmartChargingData();
+    });
+  }
+
+  Future<void> _loadSmartChargingData() async {
+    final smartChargingProvider = context.read<SmartChargingProvider>();
+    final vehicleProvider = context.read<VehicleProvider>();
+
+    // Use a default vehicle ID - in production, get from actual vehicle
+    const vehicleId = 'default-vehicle';
+
+    await smartChargingProvider.refreshAll(
+      vehicleId: vehicleId,
+      energyNeeded: 50, // Estimate 50 kWh needed
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,6 +62,8 @@ class _ChargingScreenState extends State<ChargingScreen> {
                   _buildBatteryDisplay(batteryLevel, isCharging, state),
                   const SizedBox(height: 32),
                   _buildChargingStatus(state),
+                  const SizedBox(height: 24),
+                  _buildSmartChargingRecommendation(provider),
                   const SizedBox(height: 24),
                   _buildChargingControls(provider, isCharging),
                   const SizedBox(height: 24),
@@ -368,6 +394,254 @@ class _ChargingScreenState extends State<ChargingScreen> {
         ),
       ],
     );
+  }
+
+  Widget _buildSmartChargingRecommendation(VehicleProvider vehicleProvider) {
+    return Consumer<SmartChargingProvider>(
+      builder: (context, smartProvider, child) {
+        final recommendation = smartProvider.currentRecommendation;
+        final isLoading = smartProvider.isLoading || smartProvider.isGeneratingRecommendation;
+
+        if (isLoading) {
+          return Card(
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Center(
+                child: Column(
+                  children: [
+                    const CircularProgressIndicator(),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Analyzing optimal charging times...',
+                      style: TextStyle(color: AppTheme.textSecondary),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }
+
+        if (smartProvider.error != null) {
+          return Card(
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                children: [
+                  Icon(Icons.warning_amber, color: AppTheme.accentYellow, size: 40),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Smart Charging Unavailable',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Using manual charging mode',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: AppTheme.textSecondary,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+
+        if (recommendation == null) {
+          return const SizedBox.shrink();
+        }
+
+        final shouldChargeNow = recommendation.shouldChargeNow;
+        final savings = recommendation.costSavings ?? 0.0;
+        final confidence = recommendation.confidenceScore;
+
+        return Card(
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      shouldChargeNow ? Icons.bolt : Icons.schedule,
+                      color: shouldChargeNow ? AppTheme.accentGreen : AppTheme.primaryBlue,
+                      size: 28,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Smart Charging',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: AppTheme.textPrimary,
+                            ),
+                          ),
+                          Text(
+                            shouldChargeNow ? 'Ready to charge now' : 'Wait for better rates',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: shouldChargeNow ? AppTheme.accentGreen : AppTheme.primaryBlue,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: _getConfidenceColor(confidence).withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        '$confidence%',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: _getConfidenceColor(confidence),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                if (recommendation.reasoning != null) ...[
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: AppTheme.primaryBlue.withOpacity(0.05),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      recommendation.reasoning!,
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: AppTheme.textSecondary,
+                        height: 1.4,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                ],
+                if (savings > 0) ...[
+                  Row(
+                    children: [
+                      Icon(Icons.savings, color: AppTheme.accentGreen, size: 20),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Potential savings: \$${savings.toStringAsFixed(2)}',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: AppTheme.accentGreen,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                ],
+                if (!shouldChargeNow && smartProvider.optimalChargingTime != null) ...[
+                  Row(
+                    children: [
+                      Icon(Icons.access_time, color: AppTheme.primaryBlue, size: 20),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Optimal time: ${_formatTime(smartProvider.optimalChargingTime!)}',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: AppTheme.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                ],
+                Row(
+                  children: [
+                    Expanded(
+                      child: Row(
+                        children: [
+                          Switch(
+                            value: _autoChargeEnabled,
+                            onChanged: (value) {
+                              setState(() => _autoChargeEnabled = value);
+                              if (value && shouldChargeNow) {
+                                _handleAutoCharge(vehicleProvider);
+                              }
+                            },
+                            activeColor: AppTheme.accentGreen,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'Auto-start when optimal',
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: AppTheme.textSecondary,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    TextButton.icon(
+                      onPressed: _loadSmartChargingData,
+                      icon: Icon(Icons.refresh, size: 18),
+                      label: Text('Refresh'),
+                      style: TextButton.styleFrom(
+                        foregroundColor: AppTheme.primaryBlue,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.1, end: 0);
+      },
+    );
+  }
+
+  Color _getConfidenceColor(int confidence) {
+    if (confidence >= 70) return AppTheme.accentGreen;
+    if (confidence >= 40) return AppTheme.accentYellow;
+    return AppTheme.accentRed;
+  }
+
+  String _formatTime(DateTime time) {
+    final hour = time.hour;
+    final minute = time.minute.toString().padLeft(2, '0');
+    final period = hour >= 12 ? 'PM' : 'AM';
+    final displayHour = hour > 12 ? hour - 12 : (hour == 0 ? 12 : hour);
+    return '$displayHour:$minute $period';
+  }
+
+  Future<void> _handleAutoCharge(VehicleProvider vehicleProvider) async {
+    final smartProvider = context.read<SmartChargingProvider>();
+
+    if (!smartProvider.shouldChargeNow) {
+      _showSnackBar('Waiting for optimal charging time');
+      return;
+    }
+
+    try {
+      await vehicleProvider.startCharge();
+      await smartProvider.markRecommendationExecuted();
+      _showSnackBar('Auto-charging started based on smart recommendation');
+    } catch (e) {
+      _showSnackBar('Failed to start auto-charge: ${e.toString()}', isError: true);
+    }
   }
 
   void _showSnackBar(String message, {bool isError = false}) {
