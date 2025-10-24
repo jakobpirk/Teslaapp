@@ -41,10 +41,18 @@ dependencies:
   # Dependency Injection
   get_it: ^7.6.4
 
+  # Biometric & Face Recognition
+  local_auth: ^2.1.8
+  local_auth_android: ^1.0.35
+  local_auth_ios: ^1.1.5
+  flutter_secure_storage: ^9.0.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^3.0.1
+  mockito: ^5.4.4
+  build_runner: ^2.4.7
 
 flutter:
   uses-material-design: true

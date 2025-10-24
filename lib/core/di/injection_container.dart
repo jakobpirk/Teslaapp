@@ -2,16 +2,22 @@ import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:local_auth/local_auth.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 // Data layer
 import '../data/datasources/vehicle_remote_data_source.dart';
 import '../data/repositories/vehicle_repository_impl.dart';
 import '../data/datasources/charging_stats_remote_datasource.dart';
 import '../data/repositories/charging_stats_repository_impl.dart';
+import '../data/datasources/face_auth_local_data_source.dart';
+import '../data/datasources/face_auth_remote_data_source.dart';
+import '../data/repositories/face_auth_repository_impl.dart';
 
 // Domain layer
 import '../domain/repositories/vehicle_repository.dart';
 import '../domain/repositories/charging_stats_repository.dart';
+import '../domain/repositories/face_auth_repository.dart';
 import '../domain/usecases/get_vehicle_state.dart';
 import '../domain/usecases/wake_vehicle.dart';
 import '../domain/usecases/vehicle_lock_operations.dart';
@@ -22,6 +28,8 @@ import '../domain/usecases/security_operations.dart';
 import '../domain/usecases/vehicle_access_operations.dart';
 import '../domain/usecases/get_charging_sessions.dart';
 import '../domain/usecases/save_charging_session.dart';
+import '../domain/usecases/authenticate_with_face.dart';
+import '../domain/usecases/enroll_face_biometric.dart';
 
 // Presentation layer
 import '../../features/vehicle/presentation/providers/vehicle_provider.dart';
@@ -134,4 +142,36 @@ Future<void> initializeDependencies() async {
       saveChargingSession: sl(),
     ),
   );
+
+  // Face Authentication - External dependencies
+  sl.registerLazySingleton(() => LocalAuthentication());
+  sl.registerLazySingleton(() => const FlutterSecureStorage());
+
+  // Face Authentication - Data sources
+  sl.registerLazySingleton<FaceAuthLocalDataSource>(
+    () => FaceAuthLocalDataSourceImpl(
+      localAuth: sl(),
+      secureStorage: sl(),
+    ),
+  );
+
+  sl.registerLazySingleton<FaceAuthRemoteDataSource>(
+    () => FaceAuthRemoteDataSourceImpl(
+      httpClient: sl(),
+      firestore: sl(),
+      baseUrl: dotenv.env['API_BASE_URL'] ?? 'https://api.example.com',
+    ),
+  );
+
+  // Face Authentication - Repository
+  sl.registerLazySingleton<FaceAuthRepository>(
+    () => FaceAuthRepositoryImpl(
+      localDataSource: sl(),
+      remoteDataSource: sl(),
+    ),
+  );
+
+  // Face Authentication - Use cases
+  sl.registerLazySingleton(() => AuthenticateWithFace(sl()));
+  sl.registerLazySingleton(() => EnrollFaceBiometric(sl()));
 }
