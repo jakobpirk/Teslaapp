@@ -1,6 +1,6 @@
 # Tessie Tesla Control App
 
-A modern, sleek Flutter mobile application for controlling Tesla vehicles through the Tessie API. Features a beautiful dark UI with smooth animations and comprehensive vehicle control capabilities.
+A modern, sleek Flutter mobile application for controlling Tesla vehicles through the Tessie API. Features a beautiful dark UI with smooth animations, comprehensive vehicle control capabilities, and a Laravel backend API for data storage.
 
 ## Features
 
@@ -24,6 +24,8 @@ A modern, sleek Flutter mobile application for controlling Tesla vehicles throug
 - Monitor charging rate
 - Battery health indicators
 - Charging tips and recommendations
+- Charging session history and statistics
+- Cost tracking and analytics
 
 ### Vehicle Actions
 - Lock/unlock doors
@@ -32,6 +34,11 @@ A modern, sleek Flutter mobile application for controlling Tesla vehicles throug
 - Sentry mode control
 - Open frunk/trunk
 - Vent/close windows
+
+### Security & Authentication
+- Face biometric authentication
+- Secure session management
+- Local and remote enrollment
 
 ## Screenshots
 
@@ -49,6 +56,7 @@ The app features:
 - Dart SDK
 - A Tessie API account with API key
 - Your Tesla vehicle VIN
+- Docker & Docker Compose (for backend)
 
 ### Setup
 
@@ -63,7 +71,18 @@ The app features:
    flutter pub get
    ```
 
-3. **Configure API credentials**
+3. **Set up the backend**
+
+   See [BACKEND_SETUP.md](BACKEND_SETUP.md) for detailed instructions:
+   ```bash
+   cd backend
+   cp .env.example .env
+   docker-compose up -d
+   docker-compose exec app composer install
+   docker-compose exec app php artisan migrate
+   ```
+
+4. **Configure API credentials**
 
    Copy the example environment file:
    ```bash
@@ -74,9 +93,12 @@ The app features:
    ```
    TESSIE_API_KEY=your_tessie_api_key_here
    TESSIE_VIN=your_vehicle_vin_here
+   BACKEND_API_URL=http://localhost:8080
    ```
 
-4. **Run the app**
+   For Android emulator: `BACKEND_API_URL=http://10.0.2.2:8080`
+
+5. **Run the app**
    ```bash
    flutter run
    ```
@@ -92,25 +114,35 @@ The app features:
 ## Project Structure
 
 ```
-lib/
-├── constants/
-│   └── api_constants.dart      # API endpoint definitions
-├── models/
-│   └── vehicle_state.dart      # Data models
-├── providers/
-│   └── vehicle_provider.dart   # State management
-├── screens/
-│   ├── home_screen.dart        # Main dashboard
-│   ├── climate_screen.dart     # Climate controls
-│   └── charging_screen.dart    # Charging management
-├── services/
-│   └── tessie_api_service.dart # API integration
-├── utils/
-│   └── app_theme.dart          # App theming
-├── widgets/
-│   ├── action_button.dart      # Custom buttons
-│   └── status_card.dart        # Status cards
-└── main.dart                   # App entry point
+.
+├── backend/                          # Laravel Backend API
+│   ├── app/
+│   │   ├── Http/Controllers/Api/     # REST API Controllers
+│   │   └── Models/                   # Eloquent Models
+│   ├── database/migrations/          # Database Migrations
+│   ├── routes/api.php                # API Routes
+│   ├── docker-compose.yml            # Docker Compose Config
+│   ├── Dockerfile                    # Docker Image Config
+│   └── README.md                     # Backend Documentation
+├── lib/                              # Flutter App
+│   ├── core/
+│   │   ├── data/
+│   │   │   ├── datasources/          # Data sources (HTTP, Local)
+│   │   │   ├── models/               # DTOs
+│   │   │   └── repositories/         # Repository implementations
+│   │   ├── domain/
+│   │   │   ├── entities/             # Domain entities
+│   │   │   ├── repositories/         # Repository interfaces
+│   │   │   └── usecases/             # Business logic
+│   │   └── di/                       # Dependency Injection
+│   ├── features/
+│   │   ├── vehicle/                  # Vehicle control feature
+│   │   └── charging_stats/           # Charging statistics
+│   ├── screens/                      # UI Screens
+│   ├── utils/                        # Utilities & Theme
+│   └── main.dart                     # App entry point
+├── BACKEND_SETUP.md                  # Backend Setup Guide
+└── README.md                         # This file
 ```
 
 ## API Integration
@@ -135,12 +167,21 @@ This app integrates with the Tessie API which provides:
 
 ## Technologies Used
 
+### Frontend (Flutter)
 - **Flutter** - Cross-platform mobile framework
 - **Provider** - State management
-- **HTTP/Dio** - API communication
+- **Dio** - HTTP client for API communication
 - **Google Fonts** - Typography
 - **Flutter Animate** - Smooth animations
 - **Shared Preferences** - Local storage
+- **Local Auth** - Biometric authentication
+
+### Backend (Laravel)
+- **Laravel 10** - PHP framework
+- **MySQL 8.0** - Relational database
+- **Redis** - Caching and sessions
+- **Nginx** - Web server
+- **Docker** - Containerization
 
 ## UI/UX Features
 

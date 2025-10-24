@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: tessie-laravel-app
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes:
+      - ./:/var/www
+    networks:
+      - tessie-network
+    depends_on:
+      - db
+      - redis
+    environment:
+      - DB_HOST=db
+      - DB_DATABASE=tessie
+      - DB_USERNAME=tessie_user
+      - DB_PASSWORD=tessie_password
+      - REDIS_HOST=redis
+
+  nginx:
+    image: nginx:alpine
+    container_name: tessie-nginx
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    volumes:
+      - ./:/var/www
+      - ./docker/nginx/conf.d:/etc/nginx/conf.d
+    networks:
+      - tessie-network
+    depends_on:
+      - app
+
+  db:
+    image: mysql:8.0
+    container_name: tessie-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: tessie
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_USER: tessie_user
+      MYSQL_PASSWORD: tessie_password
+    volumes:
+      - mysql-data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    networks:
+      - tessie-network
+
+  redis:
+    image: redis:alpine
+    container_name: tessie-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    networks:
+      - tessie-network
+
+networks:
+  tessie-network:
+    driver: bridge
+
+volumes:
+  mysql-data:
+    driver: local

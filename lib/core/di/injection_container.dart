@@ -1,17 +1,17 @@
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
+import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 // Data layer
 import '../data/datasources/vehicle_remote_data_source.dart';
 import '../data/repositories/vehicle_repository_impl.dart';
-import '../data/datasources/charging_stats_remote_datasource.dart';
+import '../data/datasources/charging_stats_http_datasource.dart';
 import '../data/repositories/charging_stats_repository_impl.dart';
 import '../data/datasources/face_auth_local_data_source.dart';
-import '../data/datasources/face_auth_remote_data_source.dart';
+import '../data/datasources/face_auth_http_data_source.dart';
 import '../data/repositories/face_auth_repository_impl.dart';
 
 // Domain layer
@@ -41,6 +41,26 @@ final sl = GetIt.instance;
 Future<void> initializeDependencies() async {
   // External dependencies
   sl.registerLazySingleton(() => http.Client());
+
+  // Configure Dio for HTTP requests to backend
+  sl.registerLazySingleton(() {
+    final dio = Dio(BaseOptions(
+      connectTimeout: const Duration(seconds: 30),
+      receiveTimeout: const Duration(seconds: 30),
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+    ));
+
+    // Add logging interceptor in debug mode
+    dio.interceptors.add(LogInterceptor(
+      requestBody: true,
+      responseBody: true,
+    ));
+
+    return dio;
+  });
 
   // Data sources
   sl.registerLazySingleton<VehicleRemoteDataSource>(
@@ -114,13 +134,11 @@ Future<void> initializeDependencies() async {
     ),
   );
 
-  // Charging Stats - Firestore
-  sl.registerLazySingleton(() => FirebaseFirestore.instance);
-
-  // Charging Stats - Data sources
-  sl.registerLazySingleton<ChargingStatsRemoteDataSource>(
-    () => ChargingStatsRemoteDataSourceImpl(
-      firestore: sl(),
+  // Charging Stats - Data sources (using HTTP instead of Firestore)
+  sl.registerLazySingleton<ChargingStatsHttpDataSource>(
+    () => ChargingStatsHttpDataSource(
+      dio: sl(),
+      baseUrl: dotenv.env['BACKEND_API_URL'] ?? 'http://localhost:8080',
     ),
   );
 
@@ -155,11 +173,10 @@ Future<void> initializeDependencies() async {
     ),
   );
 
-  sl.registerLazySingleton<FaceAuthRemoteDataSource>(
-    () => FaceAuthRemoteDataSourceImpl(
-      httpClient: sl(),
-      firestore: sl(),
-      baseUrl: dotenv.env['API_BASE_URL'] ?? 'https://api.example.com',
+  sl.registerLazySingleton<FaceAuthHttpDataSource>(
+    () => FaceAuthHttpDataSource(
+      dio: sl(),
+      baseUrl: dotenv.env['BACKEND_API_URL'] ?? 'http://localhost:8080',
     ),
   );
 

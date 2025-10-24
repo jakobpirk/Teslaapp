@@ -4,7 +4,7 @@ import '../../domain/entities/face_enrollment_entity.dart';
 import '../../domain/failures/failure.dart';
 import '../../domain/repositories/face_auth_repository.dart';
 import '../datasources/face_auth_local_data_source.dart';
-import '../datasources/face_auth_remote_data_source.dart';
+import '../datasources/face_auth_http_data_source.dart';
 import '../mappers/face_auth_mapper.dart';
 import '../exceptions/data_exceptions.dart';
 
@@ -13,7 +13,7 @@ import '../exceptions/data_exceptions.dart';
 /// and handles error mapping to domain failures
 class FaceAuthRepositoryImpl implements FaceAuthRepository {
   final FaceAuthLocalDataSource localDataSource;
-  final FaceAuthRemoteDataSource remoteDataSource;
+  final FaceAuthHttpDataSource remoteDataSource;
 
   FaceAuthRepositoryImpl({
     required this.localDataSource,
