@@ -185,35 +185,6 @@ class UserSettingsProvider with ChangeNotifier {
     }
   }
 
-  /// Update location
-  Future<bool> updateLocation(String location) async {
-    if (_token == null) {
-      _error = 'Not authenticated';
-      notifyListeners();
-      return false;
-    }
-
-    _isLoading = true;
-    _error = null;
-    notifyListeners();
-
-    try {
-      await _settingsDataSource.updateLocation(_token!, location);
-
-      // Reload settings
-      await loadSettings();
-
-      _isLoading = false;
-      notifyListeners();
-      return true;
-    } catch (e) {
-      _error = e.toString();
-      _isLoading = false;
-      notifyListeners();
-      return false;
-    }
-  }
-
   /// Initialize settings (load everything needed)
   Future<void> initialize() async {
     await Future.wait([

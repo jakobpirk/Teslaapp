@@ -24,7 +24,6 @@ class User extends Authenticatable
         'password',
         'tessie_api_key',
         'electricity_provider_id',
-        'location',
     ];
 
     /**

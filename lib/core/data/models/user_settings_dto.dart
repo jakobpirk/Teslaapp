@@ -9,12 +9,10 @@ class UserSettingsDto {
   final bool hasTessieApiKey;
   @JsonKey(name: 'electricity_provider')
   final ElectricityProviderDto? electricityProvider;
-  final String? location;
 
   UserSettingsDto({
     required this.hasTessieApiKey,
     this.electricityProvider,
-    this.location,
   });
 
   factory UserSettingsDto.fromJson(Map<String, dynamic> json) =>
@@ -32,7 +30,6 @@ class UserProfileDto {
   final bool hasTessieApiKey;
   @JsonKey(name: 'electricity_provider')
   final ElectricityProviderDto? electricityProvider;
-  final String? location;
   @JsonKey(name: 'vehicles_count')
   final int vehiclesCount;
   @JsonKey(name: 'active_vehicles_count')
@@ -44,7 +41,6 @@ class UserProfileDto {
     required this.email,
     required this.hasTessieApiKey,
     this.electricityProvider,
-    this.location,
     required this.vehiclesCount,
     required this.activeVehiclesCount,
   });

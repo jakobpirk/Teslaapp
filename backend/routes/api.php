@@ -115,6 +115,5 @@ Route::prefix('v1')->group(function () {
         Route::post('/settings/tessie-api-key', [UserSettingsController::class, 'updateTessieApiKey']);
         Route::delete('/settings/tessie-api-key', [UserSettingsController::class, 'removeTessieApiKey']);
         Route::post('/settings/electricity-provider', [UserSettingsController::class, 'updateElectricityProvider']);
-        Route::post('/settings/location', [UserSettingsController::class, 'updateLocation']);
     });
 });

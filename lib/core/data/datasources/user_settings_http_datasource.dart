@@ -98,21 +98,4 @@ class UserSettingsHttpDataSource {
       throw Exception(data['message'] ?? 'Failed to update electricity provider');
     }
   }
-
-  /// Update user location
-  Future<void> updateLocation(String token, String location) async {
-    final response = await client.post(
-      Uri.parse('$baseUrl/user/settings/location'),
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
-      body: json.encode({'location': location}),
-    );
-
-    if (response.statusCode != 200) {
-      final data = json.decode(response.body);
-      throw Exception(data['message'] ?? 'Failed to update location');
-    }
-  }
 }

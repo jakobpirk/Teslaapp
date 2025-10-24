@@ -22,7 +22,6 @@ class UserSettingsController extends Controller
             'data' => [
                 'has_tessie_api_key' => $user->hasTessieApiKey(),
                 'electricity_provider' => $user->electricityProvider,
-                'location' => $user->location,
             ],
         ]);
     }
@@ -112,34 +111,6 @@ class UserSettingsController extends Controller
     }
 
     /**
-     * Update user location.
-     */
-    public function updateLocation(Request $request): JsonResponse
-    {
-        $validator = Validator::make($request->all(), [
-            'location' => 'required|string|max:255',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation failed',
-                'errors' => $validator->errors(),
-            ], 422);
-        }
-
-        $user = $request->user();
-        $user->update([
-            'location' => $request->location,
-        ]);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Location updated successfully',
-        ]);
-    }
-
-    /**
      * Get complete user profile with settings.
      */
     public function profile(Request $request): JsonResponse
@@ -155,7 +126,6 @@ class UserSettingsController extends Controller
                 'email' => $user->email,
                 'has_tessie_api_key' => $user->hasTessieApiKey(),
                 'electricity_provider' => $user->electricityProvider,
-                'location' => $user->location,
                 'vehicles_count' => $user->vehicles->count(),
                 'active_vehicles_count' => $user->activeVehicles->count(),
             ],

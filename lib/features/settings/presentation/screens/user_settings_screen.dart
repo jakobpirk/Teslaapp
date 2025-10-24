@@ -54,8 +54,6 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
               _buildTessieApiKeySection(provider),
               const SizedBox(height: 24),
               _buildElectricityProviderSection(provider),
-              const SizedBox(height: 24),
-              _buildLocationSection(provider),
             ],
           );
         },
@@ -158,32 +156,6 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
             ElevatedButton(
               onPressed: () => _showProviderSelectionDialog(context, provider),
               child: Text(selectedProvider != null ? 'Change Provider' : 'Select Provider'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildLocationSection(UserSettingsProvider provider) {
-    final location = provider.settings?.location;
-
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Location',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 12),
-            Text(location ?? 'Not set'),
-            const SizedBox(height: 12),
-            ElevatedButton(
-              onPressed: () => _showLocationDialog(context, provider),
-              child: Text(location != null ? 'Update Location' : 'Set Location'),
             ),
           ],
         ),
@@ -304,51 +276,6 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: const Text('Close'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showLocationDialog(BuildContext context, UserSettingsProvider provider) {
-    final controller = TextEditingController(
-      text: provider.settings?.location ?? '',
-    );
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Set Location'),
-        content: TextField(
-          controller: controller,
-          decoration: const InputDecoration(
-            labelText: 'Location',
-            hintText: 'e.g., San Francisco, CA',
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              if (controller.text.isEmpty) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Please enter a location')),
-                );
-                return;
-              }
-
-              final success = await provider.updateLocation(controller.text);
-              if (success && context.mounted) {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Location updated')),
-                );
-              }
-            },
-            child: const Text('Save'),
           ),
         ],
       ),
