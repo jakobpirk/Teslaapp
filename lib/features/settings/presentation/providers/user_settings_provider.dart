@@ -82,18 +82,13 @@ class UserSettingsProvider with ChangeNotifier {
   }
 
   /// Load available electricity providers
-  Future<void> loadAvailableProviders({String? country}) async {
+  Future<void> loadAvailableProviders() async {
     _isLoading = true;
     _error = null;
     notifyListeners();
 
     try {
-      if (country != null) {
-        _availableProviders =
-            await _providerDataSource.getProvidersByCountry(country);
-      } else {
-        _availableProviders = await _providerDataSource.getProviders();
-      }
+      _availableProviders = await _providerDataSource.getProviders();
       _isLoading = false;
       notifyListeners();
     } catch (e) {

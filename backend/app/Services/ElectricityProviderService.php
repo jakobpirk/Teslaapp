@@ -30,8 +30,8 @@ class ElectricityProviderService
             return [
                 'timestamp' => $now,
                 'price_per_kwh' => $pricePerKwh,
-                'currency' => $this->getCurrency($provider->country),
-                'location' => $location ?? $provider->region,
+                'currency' => 'USD', // Default currency, can be enhanced later
+                'location' => $location,
                 'utility_provider' => $provider->display_name,
                 'rate_type' => $rateType,
                 'metadata' => [
@@ -74,8 +74,8 @@ class ElectricityProviderService
                 $forecast[] = [
                     'timestamp' => $timestamp,
                     'price_per_kwh' => $pricePerKwh,
-                    'currency' => $this->getCurrency($provider->country),
-                    'location' => $location ?? $provider->region,
+                    'currency' => 'USD', // Default currency, can be enhanced later
+                    'location' => $location,
                     'utility_provider' => $provider->display_name,
                     'rate_type' => $rateType,
                     'metadata' => [
@@ -211,34 +211,10 @@ class ElectricityProviderService
     }
 
     /**
-     * Get currency code based on country.
-     */
-    protected function getCurrency(string $countryCode): string
-    {
-        $currencies = [
-            'US' => 'USD',
-            'GB' => 'GBP',
-            'DE' => 'EUR',
-            'AU' => 'AUD',
-            'CA' => 'CAD',
-        ];
-
-        return $currencies[$countryCode] ?? 'USD';
-    }
-
-    /**
      * Get all active providers.
      */
     public function getActiveProviders(): \Illuminate\Database\Eloquent\Collection
     {
         return ElectricityProvider::active()->get();
-    }
-
-    /**
-     * Get providers by country.
-     */
-    public function getProvidersByCountry(string $country): \Illuminate\Database\Eloquent\Collection
-    {
-        return ElectricityProvider::active()->byCountry($country)->get();
     }
 }

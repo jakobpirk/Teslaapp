@@ -4,24 +4,23 @@ namespace Database\Seeders;
 
 use App\Models\ElectricityProvider;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Str;
 
 class ElectricityProviderSeeder extends Seeder
 {
     /**
      * Run the database seeds.
+     *
+     * Each provider is a company that supplies electricity.
+     * The API base URL determines where to fetch pricing data from.
      */
     public function run(): void
     {
         $providers = [
-            // United States - Multiple companies competing
             [
                 'name' => 'pacific_gas_electric',
-                'display_name' => 'Pacific Gas & Electric',
-                'country' => 'US',
-                'region' => 'California',
+                'display_name' => 'Pacific Gas & Electric (PG&E)',
                 'api_base_url' => 'https://api.pge.example.com',
-                'description' => 'Major California utility company serving Northern and Central California with time-of-use EV rates.',
+                'description' => 'Major California utility company with time-of-use EV rates.',
                 'is_active' => true,
                 'pricing_structure' => [
                     'rate_types' => ['off-peak', 'partial-peak', 'peak'],
@@ -39,11 +38,9 @@ class ElectricityProviderSeeder extends Seeder
             ],
             [
                 'name' => 'southern_california_edison',
-                'display_name' => 'Southern California Edison',
-                'country' => 'US',
-                'region' => 'Southern California',
+                'display_name' => 'Southern California Edison (SCE)',
                 'api_base_url' => 'https://api.sce.example.com',
-                'description' => 'Leading electric utility in Southern California with EV-specific TOU plans.',
+                'description' => 'Southern California utility with EV-specific TOU plans.',
                 'is_active' => true,
                 'pricing_structure' => [
                     'rate_types' => ['super-off-peak', 'off-peak', 'mid-peak', 'on-peak'],
@@ -64,10 +61,8 @@ class ElectricityProviderSeeder extends Seeder
             [
                 'name' => 'texas_power_grid',
                 'display_name' => 'Texas Power Grid',
-                'country' => 'US',
-                'region' => 'Texas',
                 'api_base_url' => 'https://api.texaspower.example.com',
-                'description' => 'Competitive electricity retailer in deregulated Texas market with free overnight charging.',
+                'description' => 'Competitive Texas retailer with free overnight charging.',
                 'is_active' => true,
                 'pricing_structure' => [
                     'rate_types' => ['free-nights', 'standard'],
@@ -81,15 +76,11 @@ class ElectricityProviderSeeder extends Seeder
                     ],
                 ],
             ],
-
-            // United Kingdom - Multiple companies
             [
                 'name' => 'octopus_energy',
                 'display_name' => 'Octopus Energy',
-                'country' => 'GB',
-                'region' => 'Nationwide',
                 'api_base_url' => 'https://api.octopus.example.co.uk',
-                'description' => 'Innovative energy company with Agile Octopus and EV-specific tariffs.',
+                'description' => 'Innovative UK energy company with Agile Octopus and EV-specific tariffs.',
                 'is_active' => true,
                 'pricing_structure' => [
                     'rate_types' => ['super-off-peak', 'off-peak', 'peak'],
@@ -108,8 +99,6 @@ class ElectricityProviderSeeder extends Seeder
             [
                 'name' => 'british_gas',
                 'display_name' => 'British Gas',
-                'country' => 'GB',
-                'region' => 'Nationwide',
                 'api_base_url' => 'https://api.britishgas.example.co.uk',
                 'description' => 'UK\'s largest energy supplier with Electric Driver tariff for EV owners.',
                 'is_active' => true,
@@ -125,15 +114,11 @@ class ElectricityProviderSeeder extends Seeder
                     ],
                 ],
             ],
-
-            // Germany
             [
                 'name' => 'eon_energie',
                 'display_name' => 'E.ON Energie',
-                'country' => 'DE',
-                'region' => 'Nationwide',
                 'api_base_url' => 'https://api.eon.example.de',
-                'description' => 'Major German energy provider with renewable energy focus and smart charging rates.',
+                'description' => 'German energy provider with renewable energy focus and smart charging rates.',
                 'is_active' => true,
                 'pricing_structure' => [
                     'rate_types' => ['night', 'standard', 'peak'],
@@ -149,15 +134,11 @@ class ElectricityProviderSeeder extends Seeder
                     ],
                 ],
             ],
-
-            // Australia
             [
                 'name' => 'origin_energy',
                 'display_name' => 'Origin Energy',
-                'country' => 'AU',
-                'region' => 'Nationwide',
                 'api_base_url' => 'https://api.origin.example.com.au',
-                'description' => 'Australia\'s leading energy retailer with EV Saver plan and solar integration.',
+                'description' => 'Australian energy retailer with EV Saver plan and solar integration.',
                 'is_active' => true,
                 'pricing_structure' => [
                     'rate_types' => ['overnight', 'shoulder', 'peak'],
@@ -173,13 +154,9 @@ class ElectricityProviderSeeder extends Seeder
                     ],
                 ],
             ],
-
-            // Canada
             [
                 'name' => 'toronto_hydro',
                 'display_name' => 'Toronto Hydro',
-                'country' => 'CA',
-                'region' => 'Ontario',
                 'api_base_url' => 'https://api.torontohydro.example.ca',
                 'description' => 'Toronto\'s electricity distributor with ultra-low overnight rates for EV charging.',
                 'is_active' => true,

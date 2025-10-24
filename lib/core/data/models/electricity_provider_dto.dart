@@ -8,8 +8,6 @@ class ElectricityProviderDto {
   final String name;
   @JsonKey(name: 'display_name')
   final String displayName;
-  final String country;
-  final String? region;
   @JsonKey(name: 'api_base_url')
   final String apiBaseUrl;
   final String? description;
@@ -26,8 +24,6 @@ class ElectricityProviderDto {
     required this.id,
     required this.name,
     required this.displayName,
-    required this.country,
-    this.region,
     required this.apiBaseUrl,
     this.description,
     this.isActive = true,
@@ -40,8 +36,6 @@ class ElectricityProviderDto {
       _$ElectricityProviderDtoFromJson(json);
 
   Map<String, dynamic> toJson() => _$ElectricityProviderDtoToJson(this);
-
-  String get fullName => region != null ? '$displayName - $region' : displayName;
 
   List<String> get rateTypes {
     if (pricingStructure == null) return [];

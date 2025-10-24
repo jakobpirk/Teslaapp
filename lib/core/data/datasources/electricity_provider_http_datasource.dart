@@ -31,28 +31,6 @@ class ElectricityProviderHttpDataSource {
     }
   }
 
-  /// Get providers by country
-  Future<List<ElectricityProviderDto>> getProvidersByCountry(
-    String country,
-  ) async {
-    final response = await client.get(
-      Uri.parse('$baseUrl/electricity-providers/country/$country'),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    );
-
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      final providers = (data['data'] as List)
-          .map((json) => ElectricityProviderDto.fromJson(json))
-          .toList();
-      return providers;
-    } else {
-      throw Exception('Failed to load providers by country: ${response.body}');
-    }
-  }
-
   /// Get a specific provider
   Future<ElectricityProviderDto> getProvider(String providerId) async {
     final response = await client.get(

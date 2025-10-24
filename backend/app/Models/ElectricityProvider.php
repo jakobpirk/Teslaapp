@@ -14,8 +14,6 @@ class ElectricityProvider extends Model
     protected $fillable = [
         'name',
         'display_name',
-        'country',
-        'region',
         'api_base_url',
         'description',
         'is_active',
@@ -43,13 +41,5 @@ class ElectricityProvider extends Model
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
-    }
-
-    /**
-     * Scope to filter by country.
-     */
-    public function scopeByCountry($query, string $country)
-    {
-        return $query->where('country', $country);
     }
 }

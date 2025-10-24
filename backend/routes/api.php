@@ -97,7 +97,6 @@ Route::prefix('v1')->group(function () {
     // Electricity Provider Routes (Public for listing, some endpoints protected)
     Route::prefix('electricity-providers')->group(function () {
         Route::get('/', [ElectricityProviderController::class, 'index']);
-        Route::get('/country/{country}', [ElectricityProviderController::class, 'byCountry']);
         Route::get('/{id}', [ElectricityProviderController::class, 'show']);
         Route::get('/{id}/pricing/current', [ElectricityProviderController::class, 'getCurrentPricing']);
         Route::get('/{id}/pricing/forecast', [ElectricityProviderController::class, 'getPricingForecast']);

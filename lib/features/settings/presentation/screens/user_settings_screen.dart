@@ -149,8 +149,8 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
             const SizedBox(height: 12),
             if (selectedProvider != null) ...[
               Text('Provider: ${selectedProvider.displayName}'),
-              Text('Region: ${selectedProvider.region ?? 'N/A'}'),
-              Text('Country: ${selectedProvider.country}'),
+              if (selectedProvider.description != null)
+                Text(selectedProvider.description!, style: const TextStyle(fontSize: 12, color: Colors.grey)),
             ] else ...[
               const Text('No provider selected'),
             ],
@@ -286,7 +286,7 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
                   isSelected ? Icons.radio_button_checked : Icons.radio_button_off,
                 ),
                 title: Text(p.displayName),
-                subtitle: Text('${p.region ?? p.country}'),
+                subtitle: p.description != null ? Text(p.description!) : null,
                 onTap: () async {
                   final success = await provider.updateElectricityProvider(p.id);
                   if (success && context.mounted) {

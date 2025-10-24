@@ -30,19 +30,6 @@ class ElectricityProviderController extends Controller
     }
 
     /**
-     * Get providers by country.
-     */
-    public function byCountry(string $country): JsonResponse
-    {
-        $providers = $this->providerService->getProvidersByCountry(strtoupper($country));
-
-        return response()->json([
-            'success' => true,
-            'data' => $providers,
-        ]);
-    }
-
-    /**
      * Get a specific provider.
      */
     public function show(string $id): JsonResponse

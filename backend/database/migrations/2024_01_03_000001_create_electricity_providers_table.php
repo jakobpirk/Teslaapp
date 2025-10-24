@@ -15,15 +15,13 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->string('name')->unique();
             $table->string('display_name');
-            $table->string('country', 2); // ISO country code
-            $table->string('region')->nullable();
-            $table->string('api_base_url');
+            $table->string('api_base_url'); // API endpoint to fetch pricing from
             $table->text('description')->nullable();
             $table->boolean('is_active')->default(true);
             $table->json('pricing_structure')->nullable(); // Store rate types, time windows, etc.
             $table->timestamps();
 
-            $table->index(['country', 'is_active']);
+            $table->index('is_active');
         });
     }
 
