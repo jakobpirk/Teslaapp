@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/charging_session_dto.dart';
+import '../exceptions/data_exceptions.dart';
 
 abstract class ChargingStatsRemoteDataSource {
   /// Get all charging sessions for a specific vehicle
@@ -51,8 +52,18 @@ class ChargingStatsRemoteDataSourceImpl
       return querySnapshot.docs
           .map((doc) => ChargingSessionDto.fromFirestore(doc.data(), doc.id))
           .toList();
+    } on FirebaseException catch (e) {
+      throw FirestoreException(
+        'Failed to get charging sessions',
+        e,
+        'getChargingSessions',
+      );
     } catch (e) {
-      throw Exception('Failed to get charging sessions: $e');
+      throw FirestoreException(
+        'Failed to get charging sessions',
+        e,
+        'getChargingSessions',
+      );
     }
   }
 
@@ -75,8 +86,18 @@ class ChargingStatsRemoteDataSourceImpl
       return querySnapshot.docs
           .map((doc) => ChargingSessionDto.fromFirestore(doc.data(), doc.id))
           .toList();
+    } on FirebaseException catch (e) {
+      throw FirestoreException(
+        'Failed to get charging sessions by date range',
+        e,
+        'getChargingSessionsByDateRange',
+      );
     } catch (e) {
-      throw Exception('Failed to get charging sessions by date range: $e');
+      throw FirestoreException(
+        'Failed to get charging sessions by date range',
+        e,
+        'getChargingSessionsByDateRange',
+      );
     }
   }
 
@@ -87,15 +108,32 @@ class ChargingStatsRemoteDataSourceImpl
           await firestore.collection(_collectionName).doc(sessionId).get();
 
       if (!docSnapshot.exists) {
-        throw Exception('Charging session not found: $sessionId');
+        throw DataNotFoundException(
+          'Charging session not found',
+          null,
+          'ChargingSession',
+          sessionId,
+        );
       }
 
       return ChargingSessionDto.fromFirestore(
         docSnapshot.data()!,
         docSnapshot.id,
       );
+    } on DataNotFoundException {
+      rethrow;
+    } on FirebaseException catch (e) {
+      throw FirestoreException(
+        'Failed to get charging session',
+        e,
+        'getChargingSession',
+      );
     } catch (e) {
-      throw Exception('Failed to get charging session: $e');
+      throw FirestoreException(
+        'Failed to get charging session',
+        e,
+        'getChargingSession',
+      );
     }
   }
 
@@ -109,8 +147,18 @@ class ChargingStatsRemoteDataSourceImpl
       data['vehicleId'] = vehicleId;
 
       await firestore.collection(_collectionName).doc(session.id).set(data);
+    } on FirebaseException catch (e) {
+      throw FirestoreException(
+        'Failed to save charging session',
+        e,
+        'saveChargingSession',
+      );
     } catch (e) {
-      throw Exception('Failed to save charging session: $e');
+      throw FirestoreException(
+        'Failed to save charging session',
+        e,
+        'saveChargingSession',
+      );
     }
   }
 
@@ -121,8 +169,18 @@ class ChargingStatsRemoteDataSourceImpl
           .collection(_collectionName)
           .doc(session.id)
           .update(session.toFirestore());
+    } on FirebaseException catch (e) {
+      throw FirestoreException(
+        'Failed to update charging session',
+        e,
+        'updateChargingSession',
+      );
     } catch (e) {
-      throw Exception('Failed to update charging session: $e');
+      throw FirestoreException(
+        'Failed to update charging session',
+        e,
+        'updateChargingSession',
+      );
     }
   }
 
@@ -130,8 +188,18 @@ class ChargingStatsRemoteDataSourceImpl
   Future<void> deleteChargingSession(String sessionId) async {
     try {
       await firestore.collection(_collectionName).doc(sessionId).delete();
+    } on FirebaseException catch (e) {
+      throw FirestoreException(
+        'Failed to delete charging session',
+        e,
+        'deleteChargingSession',
+      );
     } catch (e) {
-      throw Exception('Failed to delete charging session: $e');
+      throw FirestoreException(
+        'Failed to delete charging session',
+        e,
+        'deleteChargingSession',
+      );
     }
   }
 
@@ -153,8 +221,18 @@ class ChargingStatsRemoteDataSourceImpl
         querySnapshot.docs.first.data(),
         querySnapshot.docs.first.id,
       );
+    } on FirebaseException catch (e) {
+      throw FirestoreException(
+        'Failed to get most recent session',
+        e,
+        'getMostRecentSession',
+      );
     } catch (e) {
-      throw Exception('Failed to get most recent session: $e');
+      throw FirestoreException(
+        'Failed to get most recent session',
+        e,
+        'getMostRecentSession',
+      );
     }
   }
 }

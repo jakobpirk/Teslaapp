@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../models/face_enrollment_dto.dart';
 import '../models/face_auth_response_dto.dart';
+import '../exceptions/data_exceptions.dart';
 
 /// Abstract interface for remote face authentication operations
 abstract class FaceAuthRemoteDataSource {
@@ -76,8 +77,18 @@ class FaceAuthRemoteDataSourceImpl implements FaceAuthRemoteDataSource {
         sessionData,
         sessionRef.id,
       );
+    } on FirebaseException catch (e) {
+      throw FirestoreException(
+        'Failed to verify authentication',
+        e,
+        'verifyAuthentication',
+      );
     } catch (e) {
-      throw Exception('Failed to verify authentication: $e');
+      throw FirestoreException(
+        'Failed to verify authentication',
+        e,
+        'verifyAuthentication',
+      );
     }
   }
 
@@ -116,8 +127,18 @@ class FaceAuthRemoteDataSourceImpl implements FaceAuthRemoteDataSource {
         enrollmentData,
         enrollmentRef.id,
       );
+    } on FirebaseException catch (e) {
+      throw FirestoreException(
+        'Failed to register enrollment',
+        e,
+        'registerEnrollment',
+      );
     } catch (e) {
-      throw Exception('Failed to register enrollment: $e');
+      throw FirestoreException(
+        'Failed to register enrollment',
+        e,
+        'registerEnrollment',
+      );
     }
   }
 
@@ -132,13 +153,30 @@ class FaceAuthRemoteDataSourceImpl implements FaceAuthRemoteDataSource {
           .get();
 
       if (querySnapshot.docs.isEmpty) {
-        throw Exception('No active enrollment found for user');
+        throw DataNotFoundException(
+          'No active enrollment found for user',
+          null,
+          'FaceEnrollment',
+          userId,
+        );
       }
 
       final doc = querySnapshot.docs.first;
       return FaceEnrollmentDto.fromFirestore(doc.data(), doc.id);
+    } on DataNotFoundException {
+      rethrow;
+    } on FirebaseException catch (e) {
+      throw FirestoreException(
+        'Failed to get enrollment',
+        e,
+        'getEnrollment',
+      );
     } catch (e) {
-      throw Exception('Failed to get enrollment: $e');
+      throw FirestoreException(
+        'Failed to get enrollment',
+        e,
+        'getEnrollment',
+      );
     }
   }
 
@@ -154,8 +192,18 @@ class FaceAuthRemoteDataSourceImpl implements FaceAuthRemoteDataSource {
       for (var doc in querySnapshot.docs) {
         await doc.reference.delete();
       }
+    } on FirebaseException catch (e) {
+      throw FirestoreException(
+        'Failed to delete enrollment',
+        e,
+        'deleteEnrollment',
+      );
     } catch (e) {
-      throw Exception('Failed to delete enrollment: $e');
+      throw FirestoreException(
+        'Failed to delete enrollment',
+        e,
+        'deleteEnrollment',
+      );
     }
   }
 
@@ -180,8 +228,18 @@ class FaceAuthRemoteDataSourceImpl implements FaceAuthRemoteDataSource {
       }
 
       return sessionData['isAuthenticated'] as bool? ?? false;
+    } on FirebaseException catch (e) {
+      throw FirestoreException(
+        'Failed to verify session token',
+        e,
+        'verifySessionToken',
+      );
     } catch (e) {
-      throw Exception('Failed to verify session token: $e');
+      throw FirestoreException(
+        'Failed to verify session token',
+        e,
+        'verifySessionToken',
+      );
     }
   }
 
@@ -192,8 +250,18 @@ class FaceAuthRemoteDataSourceImpl implements FaceAuthRemoteDataSource {
         'isAuthenticated': false,
         'expiresAt': Timestamp.now(), // Expire immediately
       });
+    } on FirebaseException catch (e) {
+      throw FirestoreException(
+        'Failed to invalidate session',
+        e,
+        'invalidateSession',
+      );
     } catch (e) {
-      throw Exception('Failed to invalidate session: $e');
+      throw FirestoreException(
+        'Failed to invalidate session',
+        e,
+        'invalidateSession',
+      );
     }
   }
 }

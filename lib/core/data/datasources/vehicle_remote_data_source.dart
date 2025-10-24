@@ -1,7 +1,9 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
 import '../../../constants/api_constants.dart';
 import '../models/vehicle_dto.dart';
+import '../exceptions/data_exceptions.dart';
 
 /// Abstract interface for remote data source
 abstract class VehicleRemoteDataSource {
@@ -54,16 +56,47 @@ class VehicleRemoteDataSourceImpl implements VehicleRemoteDataSource {
 
   @override
   Future<VehicleDto> getVehicleState() async {
-    final response = await client.get(
-      Uri.parse(_buildUrl(ApiConstants.state)),
-      headers: _headers,
-    );
+    try {
+      final response = await client.get(
+        Uri.parse(_buildUrl(ApiConstants.state)),
+        headers: _headers,
+      );
 
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      return VehicleDto.fromJson(data);
-    } else {
-      throw Exception('Failed to load vehicle state: ${response.body}');
+      if (response.statusCode == 200) {
+        try {
+          final data = json.decode(response.body);
+          return VehicleDto.fromJson(data);
+        } catch (e) {
+          throw ParseException(
+            'Failed to parse vehicle state response',
+            e,
+          );
+        }
+      } else if (response.statusCode == 401 || response.statusCode == 403) {
+        throw AuthenticationException(
+          'Authentication failed',
+          null,
+          response.statusCode,
+        );
+      } else if (response.statusCode >= 500) {
+        throw ServerException(
+          'Server error occurred',
+          response.body,
+          response.statusCode,
+        );
+      } else {
+        throw NetworkException(
+          'Failed to load vehicle state',
+          response.body,
+          response.statusCode,
+        );
+      }
+    } on SocketException catch (e) {
+      throw NetworkException('No internet connection', e);
+    } on DataException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Failed to load vehicle state', e);
     }
   }
 
@@ -199,14 +232,40 @@ class VehicleRemoteDataSourceImpl implements VehicleRemoteDataSource {
     String endpoint, {
     Map<String, dynamic>? body,
   }) async {
-    final response = await client.post(
-      Uri.parse(_buildUrl(endpoint)),
-      headers: _headers,
-      body: body != null ? json.encode(body) : null,
-    );
+    try {
+      final response = await client.post(
+        Uri.parse(_buildUrl(endpoint)),
+        headers: _headers,
+        body: body != null ? json.encode(body) : null,
+      );
 
-    if (response.statusCode != 200 && response.statusCode != 201) {
-      throw Exception('Request failed: ${response.body}');
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return;
+      } else if (response.statusCode == 401 || response.statusCode == 403) {
+        throw AuthenticationException(
+          'Authentication failed',
+          response.body,
+          response.statusCode,
+        );
+      } else if (response.statusCode >= 500) {
+        throw ServerException(
+          'Server error occurred',
+          response.body,
+          response.statusCode,
+        );
+      } else {
+        throw NetworkException(
+          'Request failed',
+          response.body,
+          response.statusCode,
+        );
+      }
+    } on SocketException catch (e) {
+      throw NetworkException('No internet connection', e);
+    } on DataException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Request failed', e);
     }
   }
 }

@@ -4,6 +4,7 @@ import '../../domain/failures/failure.dart';
 import '../../domain/repositories/vehicle_repository.dart';
 import '../datasources/vehicle_remote_data_source.dart';
 import '../mappers/vehicle_mapper.dart';
+import '../exceptions/data_exceptions.dart';
 
 /// Implementation of the vehicle repository
 /// This class handles data operations and error handling
@@ -20,8 +21,10 @@ class VehicleRepositoryImpl implements VehicleRepository {
       final dto = await remoteDataSource.getVehicleState();
       final entity = VehicleMapper.toEntity(dto);
       return Right(entity);
+    } on DataException catch (e) {
+      return Left(_handleDataException(e));
     } on Exception catch (e) {
-      return Left(_handleException(e));
+      return Left(UnknownFailure(e.toString()));
     }
   }
 
@@ -30,8 +33,10 @@ class VehicleRepositoryImpl implements VehicleRepository {
     try {
       await remoteDataSource.wakeVehicle();
       return const Right(null);
+    } on DataException catch (e) {
+      return Left(_handleDataException(e));
     } on Exception catch (e) {
-      return Left(_handleException(e));
+      return Left(UnknownFailure(e.toString()));
     }
   }
 
@@ -40,8 +45,10 @@ class VehicleRepositoryImpl implements VehicleRepository {
     try {
       await remoteDataSource.lockVehicle();
       return const Right(null);
+    } on DataException catch (e) {
+      return Left(_handleDataException(e));
     } on Exception catch (e) {
-      return Left(_handleException(e));
+      return Left(UnknownFailure(e.toString()));
     }
   }
 
@@ -50,8 +57,10 @@ class VehicleRepositoryImpl implements VehicleRepository {
     try {
       await remoteDataSource.unlockVehicle();
       return const Right(null);
+    } on DataException catch (e) {
+      return Left(_handleDataException(e));
     } on Exception catch (e) {
-      return Left(_handleException(e));
+      return Left(UnknownFailure(e.toString()));
     }
   }
 
@@ -60,8 +69,10 @@ class VehicleRepositoryImpl implements VehicleRepository {
     try {
       await remoteDataSource.flashLights();
       return const Right(null);
+    } on DataException catch (e) {
+      return Left(_handleDataException(e));
     } on Exception catch (e) {
-      return Left(_handleException(e));
+      return Left(UnknownFailure(e.toString()));
     }
   }
 
@@ -70,8 +81,10 @@ class VehicleRepositoryImpl implements VehicleRepository {
     try {
       await remoteDataSource.honkHorn();
       return const Right(null);
+    } on DataException catch (e) {
+      return Left(_handleDataException(e));
     } on Exception catch (e) {
-      return Left(_handleException(e));
+      return Left(UnknownFailure(e.toString()));
     }
   }
 
@@ -80,8 +93,10 @@ class VehicleRepositoryImpl implements VehicleRepository {
     try {
       await remoteDataSource.startClimate();
       return const Right(null);
+    } on DataException catch (e) {
+      return Left(_handleDataException(e));
     } on Exception catch (e) {
-      return Left(_handleException(e));
+      return Left(UnknownFailure(e.toString()));
     }
   }
 
@@ -90,8 +105,10 @@ class VehicleRepositoryImpl implements VehicleRepository {
     try {
       await remoteDataSource.stopClimate();
       return const Right(null);
+    } on DataException catch (e) {
+      return Left(_handleDataException(e));
     } on Exception catch (e) {
-      return Left(_handleException(e));
+      return Left(UnknownFailure(e.toString()));
     }
   }
 
@@ -100,8 +117,10 @@ class VehicleRepositoryImpl implements VehicleRepository {
     try {
       await remoteDataSource.setTemperature(temperature);
       return const Right(null);
+    } on DataException catch (e) {
+      return Left(_handleDataException(e));
     } on Exception catch (e) {
-      return Left(_handleException(e));
+      return Left(UnknownFailure(e.toString()));
     }
   }
 
@@ -110,8 +129,10 @@ class VehicleRepositoryImpl implements VehicleRepository {
     try {
       await remoteDataSource.enableMaxDefrost();
       return const Right(null);
+    } on DataException catch (e) {
+      return Left(_handleDataException(e));
     } on Exception catch (e) {
-      return Left(_handleException(e));
+      return Left(UnknownFailure(e.toString()));
     }
   }
 
@@ -120,8 +141,10 @@ class VehicleRepositoryImpl implements VehicleRepository {
     try {
       await remoteDataSource.disableMaxDefrost();
       return const Right(null);
+    } on DataException catch (e) {
+      return Left(_handleDataException(e));
     } on Exception catch (e) {
-      return Left(_handleException(e));
+      return Left(UnknownFailure(e.toString()));
     }
   }
 
@@ -130,8 +153,10 @@ class VehicleRepositoryImpl implements VehicleRepository {
     try {
       await remoteDataSource.setSeatHeater(seat, level);
       return const Right(null);
+    } on DataException catch (e) {
+      return Left(_handleDataException(e));
     } on Exception catch (e) {
-      return Left(_handleException(e));
+      return Left(UnknownFailure(e.toString()));
     }
   }
 
@@ -140,8 +165,10 @@ class VehicleRepositoryImpl implements VehicleRepository {
     try {
       await remoteDataSource.setSeatCooler(seat, level);
       return const Right(null);
+    } on DataException catch (e) {
+      return Left(_handleDataException(e));
     } on Exception catch (e) {
-      return Left(_handleException(e));
+      return Left(UnknownFailure(e.toString()));
     }
   }
 
@@ -150,8 +177,10 @@ class VehicleRepositoryImpl implements VehicleRepository {
     try {
       await remoteDataSource.enableSteeringWheelHeater();
       return const Right(null);
+    } on DataException catch (e) {
+      return Left(_handleDataException(e));
     } on Exception catch (e) {
-      return Left(_handleException(e));
+      return Left(UnknownFailure(e.toString()));
     }
   }
 
@@ -160,8 +189,10 @@ class VehicleRepositoryImpl implements VehicleRepository {
     try {
       await remoteDataSource.disableSteeringWheelHeater();
       return const Right(null);
+    } on DataException catch (e) {
+      return Left(_handleDataException(e));
     } on Exception catch (e) {
-      return Left(_handleException(e));
+      return Left(UnknownFailure(e.toString()));
     }
   }
 
@@ -170,8 +201,10 @@ class VehicleRepositoryImpl implements VehicleRepository {
     try {
       await remoteDataSource.startCharging();
       return const Right(null);
+    } on DataException catch (e) {
+      return Left(_handleDataException(e));
     } on Exception catch (e) {
-      return Left(_handleException(e));
+      return Left(UnknownFailure(e.toString()));
     }
   }
 
@@ -180,8 +213,10 @@ class VehicleRepositoryImpl implements VehicleRepository {
     try {
       await remoteDataSource.stopCharging();
       return const Right(null);
+    } on DataException catch (e) {
+      return Left(_handleDataException(e));
     } on Exception catch (e) {
-      return Left(_handleException(e));
+      return Left(UnknownFailure(e.toString()));
     }
   }
 
@@ -190,8 +225,10 @@ class VehicleRepositoryImpl implements VehicleRepository {
     try {
       await remoteDataSource.setChargeLimit(limit);
       return const Right(null);
+    } on DataException catch (e) {
+      return Left(_handleDataException(e));
     } on Exception catch (e) {
-      return Left(_handleException(e));
+      return Left(UnknownFailure(e.toString()));
     }
   }
 
@@ -200,8 +237,10 @@ class VehicleRepositoryImpl implements VehicleRepository {
     try {
       await remoteDataSource.enableSentryMode();
       return const Right(null);
+    } on DataException catch (e) {
+      return Left(_handleDataException(e));
     } on Exception catch (e) {
-      return Left(_handleException(e));
+      return Left(UnknownFailure(e.toString()));
     }
   }
 
@@ -210,8 +249,10 @@ class VehicleRepositoryImpl implements VehicleRepository {
     try {
       await remoteDataSource.disableSentryMode();
       return const Right(null);
+    } on DataException catch (e) {
+      return Left(_handleDataException(e));
     } on Exception catch (e) {
-      return Left(_handleException(e));
+      return Left(UnknownFailure(e.toString()));
     }
   }
 
@@ -220,8 +261,10 @@ class VehicleRepositoryImpl implements VehicleRepository {
     try {
       await remoteDataSource.openFrunk();
       return const Right(null);
+    } on DataException catch (e) {
+      return Left(_handleDataException(e));
     } on Exception catch (e) {
-      return Left(_handleException(e));
+      return Left(UnknownFailure(e.toString()));
     }
   }
 
@@ -230,8 +273,10 @@ class VehicleRepositoryImpl implements VehicleRepository {
     try {
       await remoteDataSource.openTrunk();
       return const Right(null);
+    } on DataException catch (e) {
+      return Left(_handleDataException(e));
     } on Exception catch (e) {
-      return Left(_handleException(e));
+      return Left(UnknownFailure(e.toString()));
     }
   }
 
@@ -240,8 +285,10 @@ class VehicleRepositoryImpl implements VehicleRepository {
     try {
       await remoteDataSource.ventWindows();
       return const Right(null);
+    } on DataException catch (e) {
+      return Left(_handleDataException(e));
     } on Exception catch (e) {
-      return Left(_handleException(e));
+      return Left(UnknownFailure(e.toString()));
     }
   }
 
@@ -250,26 +297,25 @@ class VehicleRepositoryImpl implements VehicleRepository {
     try {
       await remoteDataSource.closeWindows();
       return const Right(null);
+    } on DataException catch (e) {
+      return Left(_handleDataException(e));
     } on Exception catch (e) {
-      return Left(_handleException(e));
+      return Left(UnknownFailure(e.toString()));
     }
   }
 
-  /// Handle exceptions and convert to domain failures
-  Failure _handleException(Exception exception) {
-    final message = exception.toString();
-
-    if (message.contains('Failed to load vehicle state')) {
-      return ServerFailure(message);
-    } else if (message.contains('Request failed')) {
-      return ServerFailure(message);
-    } else if (message.contains('SocketException') ||
-        message.contains('NetworkException')) {
-      return NetworkFailure('Network error occurred');
-    } else if (message.contains('401') || message.contains('403')) {
-      return AuthenticationFailure('Authentication failed');
+  /// Handle data exceptions and convert to domain failures
+  Failure _handleDataException(DataException exception) {
+    if (exception is NetworkException) {
+      return NetworkFailure(exception.message);
+    } else if (exception is AuthenticationException) {
+      return AuthenticationFailure(exception.message);
+    } else if (exception is ServerException) {
+      return ServerFailure(exception.message);
+    } else if (exception is ParseException) {
+      return ServerFailure('Data parsing error: ${exception.message}');
     } else {
-      return UnknownFailure(message);
+      return UnknownFailure(exception.message);
     }
   }
 }
