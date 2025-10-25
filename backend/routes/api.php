@@ -93,6 +93,8 @@ Route::prefix('v1')->group(function () {
         Route::delete('/{id}', [VehicleController::class, 'destroy']);
         Route::delete('/{id}/force', [VehicleController::class, 'forceDestroy']);
         Route::get('/{id}/statistics', [VehicleController::class, 'statistics']);
+        Route::get('/{id}/charging-settings', [VehicleController::class, 'getChargingSettings']);
+        Route::put('/{id}/charging-settings', [VehicleController::class, 'updateChargingSettings']);
     });
 
     // Electricity Provider Routes (Public for listing, some endpoints protected)

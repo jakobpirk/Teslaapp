@@ -151,4 +151,48 @@ class VehicleHttpDataSource {
       throw Exception('Failed to load vehicle statistics: ${response.body}');
     }
   }
+
+  /// Get charging settings for a specific vehicle
+  Future<VehicleChargingSettingsDto> getChargingSettings(
+    String token,
+    String vehicleId,
+  ) async {
+    final response = await client.get(
+      Uri.parse('$baseUrl/vehicles/$vehicleId/charging-settings'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      return VehicleChargingSettingsDto.fromJson(data['data']);
+    } else {
+      throw Exception('Failed to load charging settings: ${response.body}');
+    }
+  }
+
+  /// Update charging settings for a specific vehicle
+  Future<VehicleModelDto> updateChargingSettings(
+    String token,
+    String vehicleId,
+    UpdateVehicleChargingSettingsDto settingsDto,
+  ) async {
+    final response = await client.put(
+      Uri.parse('$baseUrl/vehicles/$vehicleId/charging-settings'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+      body: json.encode(settingsDto.toJson()),
+    );
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      return VehicleModelDto.fromJson(data['data']);
+    } else {
+      throw Exception('Failed to update charging settings: ${response.body}');
+    }
+  }
 }

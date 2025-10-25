@@ -21,6 +21,16 @@ class VehicleModelDto {
   final bool isActive;
   @JsonKey(name: 'vehicle_config')
   final Map<String, dynamic>? vehicleConfig;
+  @JsonKey(name: 'charge_limit')
+  final int? chargeLimit;
+  @JsonKey(name: 'auto_charging_enabled')
+  final bool? autoChargingEnabled;
+  @JsonKey(name: 'low_battery_protection_enabled')
+  final bool? lowBatteryProtectionEnabled;
+  @JsonKey(name: 'low_battery_threshold')
+  final int? lowBatteryThreshold;
+  @JsonKey(name: 'low_battery_stop_limit')
+  final int? lowBatteryStopLimit;
   @JsonKey(name: 'created_at')
   final DateTime createdAt;
   @JsonKey(name: 'updated_at')
@@ -37,6 +47,11 @@ class VehicleModelDto {
     this.batteryCapacity,
     this.isActive = true,
     this.vehicleConfig,
+    this.chargeLimit,
+    this.autoChargingEnabled,
+    this.lowBatteryProtectionEnabled,
+    this.lowBatteryThreshold,
+    this.lowBatteryStopLimit,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -100,6 +115,16 @@ class UpdateVehicleDto {
   final bool? isActive;
   @JsonKey(name: 'vehicle_config')
   final Map<String, dynamic>? vehicleConfig;
+  @JsonKey(name: 'charge_limit')
+  final int? chargeLimit;
+  @JsonKey(name: 'auto_charging_enabled')
+  final bool? autoChargingEnabled;
+  @JsonKey(name: 'low_battery_protection_enabled')
+  final bool? lowBatteryProtectionEnabled;
+  @JsonKey(name: 'low_battery_threshold')
+  final int? lowBatteryThreshold;
+  @JsonKey(name: 'low_battery_stop_limit')
+  final int? lowBatteryStopLimit;
 
   UpdateVehicleDto({
     this.displayName,
@@ -110,6 +135,11 @@ class UpdateVehicleDto {
     this.batteryCapacity,
     this.isActive,
     this.vehicleConfig,
+    this.chargeLimit,
+    this.autoChargingEnabled,
+    this.lowBatteryProtectionEnabled,
+    this.lowBatteryThreshold,
+    this.lowBatteryStopLimit,
   });
 
   factory UpdateVehicleDto.fromJson(Map<String, dynamic> json) =>
@@ -125,6 +155,79 @@ class UpdateVehicleDto {
     if (batteryCapacity != null) json['battery_capacity'] = batteryCapacity;
     if (isActive != null) json['is_active'] = isActive;
     if (vehicleConfig != null) json['vehicle_config'] = vehicleConfig;
+    if (chargeLimit != null) json['charge_limit'] = chargeLimit;
+    if (autoChargingEnabled != null) json['auto_charging_enabled'] = autoChargingEnabled;
+    if (lowBatteryProtectionEnabled != null) json['low_battery_protection_enabled'] = lowBatteryProtectionEnabled;
+    if (lowBatteryThreshold != null) json['low_battery_threshold'] = lowBatteryThreshold;
+    if (lowBatteryStopLimit != null) json['low_battery_stop_limit'] = lowBatteryStopLimit;
+    return json;
+  }
+}
+
+@JsonSerializable()
+class VehicleChargingSettingsDto {
+  @JsonKey(name: 'vehicle_id')
+  final String vehicleId;
+  @JsonKey(name: 'display_name')
+  final String displayName;
+  @JsonKey(name: 'charge_limit')
+  final int chargeLimit;
+  @JsonKey(name: 'auto_charging_enabled')
+  final bool autoChargingEnabled;
+  @JsonKey(name: 'low_battery_protection_enabled')
+  final bool lowBatteryProtectionEnabled;
+  @JsonKey(name: 'low_battery_threshold')
+  final int lowBatteryThreshold;
+  @JsonKey(name: 'low_battery_stop_limit')
+  final int lowBatteryStopLimit;
+
+  VehicleChargingSettingsDto({
+    required this.vehicleId,
+    required this.displayName,
+    required this.chargeLimit,
+    required this.autoChargingEnabled,
+    required this.lowBatteryProtectionEnabled,
+    required this.lowBatteryThreshold,
+    required this.lowBatteryStopLimit,
+  });
+
+  factory VehicleChargingSettingsDto.fromJson(Map<String, dynamic> json) =>
+      _$VehicleChargingSettingsDtoFromJson(json);
+
+  Map<String, dynamic> toJson() => _$VehicleChargingSettingsDtoToJson(this);
+}
+
+@JsonSerializable()
+class UpdateVehicleChargingSettingsDto {
+  @JsonKey(name: 'charge_limit')
+  final int? chargeLimit;
+  @JsonKey(name: 'auto_charging_enabled')
+  final bool? autoChargingEnabled;
+  @JsonKey(name: 'low_battery_protection_enabled')
+  final bool? lowBatteryProtectionEnabled;
+  @JsonKey(name: 'low_battery_threshold')
+  final int? lowBatteryThreshold;
+  @JsonKey(name: 'low_battery_stop_limit')
+  final int? lowBatteryStopLimit;
+
+  UpdateVehicleChargingSettingsDto({
+    this.chargeLimit,
+    this.autoChargingEnabled,
+    this.lowBatteryProtectionEnabled,
+    this.lowBatteryThreshold,
+    this.lowBatteryStopLimit,
+  });
+
+  factory UpdateVehicleChargingSettingsDto.fromJson(Map<String, dynamic> json) =>
+      _$UpdateVehicleChargingSettingsDtoFromJson(json);
+
+  Map<String, dynamic> toJson() {
+    final json = <String, dynamic>{};
+    if (chargeLimit != null) json['charge_limit'] = chargeLimit;
+    if (autoChargingEnabled != null) json['auto_charging_enabled'] = autoChargingEnabled;
+    if (lowBatteryProtectionEnabled != null) json['low_battery_protection_enabled'] = lowBatteryProtectionEnabled;
+    if (lowBatteryThreshold != null) json['low_battery_threshold'] = lowBatteryThreshold;
+    if (lowBatteryStopLimit != null) json['low_battery_stop_limit'] = lowBatteryStopLimit;
     return json;
   }
 }

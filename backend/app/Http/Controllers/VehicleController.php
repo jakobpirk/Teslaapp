@@ -70,6 +70,11 @@ class VehicleController extends Controller
             'year' => 'nullable|integer|min:2000|max:' . (date('Y') + 1),
             'battery_capacity' => 'nullable|numeric|min:0',
             'vehicle_config' => 'nullable|array',
+            'charge_limit' => 'nullable|integer|min:50|max:100',
+            'auto_charging_enabled' => 'nullable|boolean',
+            'low_battery_protection_enabled' => 'nullable|boolean',
+            'low_battery_threshold' => 'nullable|integer|min:5|max:95',
+            'low_battery_stop_limit' => 'nullable|integer|min:10|max:100',
         ]);
 
         if ($validator->fails()) {
@@ -129,6 +134,11 @@ class VehicleController extends Controller
             'battery_capacity' => 'nullable|numeric|min:0',
             'is_active' => 'sometimes|boolean',
             'vehicle_config' => 'nullable|array',
+            'charge_limit' => 'nullable|integer|min:50|max:100',
+            'auto_charging_enabled' => 'nullable|boolean',
+            'low_battery_protection_enabled' => 'nullable|boolean',
+            'low_battery_threshold' => 'nullable|integer|min:5|max:95',
+            'low_battery_stop_limit' => 'nullable|integer|min:10|max:100',
         ]);
 
         if ($validator->fails()) {
@@ -211,6 +221,73 @@ class VehicleController extends Controller
                 ],
                 'recent_session' => $recentSession,
                 'latest_recommendation' => $latestRecommendation,
+            ],
+        ]);
+    }
+
+    /**
+     * Update charging settings for a specific vehicle.
+     */
+    public function updateChargingSettings(Request $request, string $id): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'charge_limit' => 'nullable|integer|min:50|max:100',
+            'auto_charging_enabled' => 'nullable|boolean',
+            'low_battery_protection_enabled' => 'nullable|boolean',
+            'low_battery_threshold' => 'nullable|integer|min:5|max:95',
+            'low_battery_stop_limit' => 'nullable|integer|min:10|max:100',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $user = $request->user();
+        $vehicle = $user->vehicles()->findOrFail($id);
+
+        // Validate that low_battery_stop_limit is greater than low_battery_threshold if both provided
+        $data = $validator->validated();
+        $threshold = $data['low_battery_threshold'] ?? $vehicle->low_battery_threshold;
+        $stopLimit = $data['low_battery_stop_limit'] ?? $vehicle->low_battery_stop_limit;
+
+        if ($threshold && $stopLimit && $stopLimit <= $threshold) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Low battery stop limit must be greater than low battery threshold',
+            ], 422);
+        }
+
+        $vehicle->update($data);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Charging settings updated successfully',
+            'data' => $vehicle,
+        ]);
+    }
+
+    /**
+     * Get charging settings for a specific vehicle.
+     */
+    public function getChargingSettings(Request $request, string $id): JsonResponse
+    {
+        $user = $request->user();
+        $vehicle = $user->vehicles()->findOrFail($id);
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'vehicle_id' => $vehicle->id,
+                'display_name' => $vehicle->display_name,
+                'charge_limit' => $vehicle->charge_limit,
+                'auto_charging_enabled' => $vehicle->auto_charging_enabled,
+                'low_battery_protection_enabled' => $vehicle->low_battery_protection_enabled,
+                'low_battery_threshold' => $vehicle->low_battery_threshold,
+                'low_battery_stop_limit' => $vehicle->low_battery_stop_limit,
             ],
         ]);
     }
