@@ -11,7 +11,7 @@ class ChargingStatsProvider with ChangeNotifier {
   List<ChargingSessionEntity> _sessions = [];
   bool _isLoading = false;
   String? _error;
-  bool _useMockData = true; // Use mock data when Firebase is not configured
+  bool _useMockData = kIsWeb ? true : true; // Always use mock data on web, default to true on mobile
 
   ChargingStatsProvider({
     required GetChargingSessions getChargingSessions,
@@ -96,7 +96,11 @@ class ChargingStatsProvider with ChangeNotifier {
   }
 
   /// Toggle between mock data and real Firebase data
+  /// On web, this is disabled and mock data is always used
   void toggleMockData() {
+    if (kIsWeb) {
+      return; // Cannot toggle on web - always use mock data
+    }
     _useMockData = !_useMockData;
     notifyListeners();
   }
