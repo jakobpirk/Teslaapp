@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../features/vehicle/presentation/providers/vehicle_provider.dart';
 import '../utils/app_theme.dart';
 
@@ -18,7 +19,7 @@ class _ClimateScreenState extends State<ClimateScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Climate Control'),
+        title: Text(AppLocalizations.of(context)!.climateControl),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
@@ -86,7 +87,7 @@ class _ClimateScreenState extends State<ClimateScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            isClimateOn ? 'Climate Active' : 'Climate Off',
+            isClimateOn ? AppLocalizations.of(context)!.climateActive : AppLocalizations.of(context)!.climateOff,
             style: TextStyle(
               fontSize: 16,
               color: isClimateOn ? AppTheme.accentGreen : AppTheme.textSecondary,
@@ -95,7 +96,7 @@ class _ClimateScreenState extends State<ClimateScreen> {
           if (state?.insideTemp != null) ...[
             const SizedBox(height: 8),
             Text(
-              'Inside: ${state!.insideTemp!.toInt()}°C',
+              AppLocalizations.of(context)!.inside(state!.insideTemp!.toInt().toString()),
               style: const TextStyle(
                 fontSize: 14,
                 color: AppTheme.textSecondary,
@@ -171,10 +172,10 @@ class _ClimateScreenState extends State<ClimateScreen> {
         onPressed: () async {
           if (isClimateOn) {
             await provider.stopClimateControl();
-            _showSnackBar('Climate stopped');
+            _showSnackBar(AppLocalizations.of(context)!.stop);
           } else {
             await provider.startClimateControl();
-            _showSnackBar('Climate started');
+            _showSnackBar(AppLocalizations.of(context)!.start);
           }
         },
         style: ElevatedButton.styleFrom(
@@ -182,7 +183,7 @@ class _ClimateScreenState extends State<ClimateScreen> {
           padding: const EdgeInsets.symmetric(vertical: 16),
         ),
         child: Text(
-          isClimateOn ? 'Turn Off Climate' : 'Turn On Climate',
+          isClimateOn ? AppLocalizations.of(context)!.stop : AppLocalizations.of(context)!.start,
           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
         ),
       ),
@@ -196,9 +197,9 @@ class _ClimateScreenState extends State<ClimateScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Defrost',
-              style: TextStyle(
+            Text(
+              AppLocalizations.of(context)!.defrost,
+              style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
                 color: AppTheme.textPrimary,
@@ -211,10 +212,10 @@ class _ClimateScreenState extends State<ClimateScreen> {
                   child: OutlinedButton.icon(
                     onPressed: () async {
                       await provider.enableDefrost();
-                      _showSnackBar('Defrost started');
+                      _showSnackBar(AppLocalizations.of(context)!.start);
                     },
                     icon: const Icon(Icons.ac_unit),
-                    label: const Text('Start'),
+                    label: Text(AppLocalizations.of(context)!.start),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: AppTheme.accentGreen,
                       side: const BorderSide(color: AppTheme.accentGreen),
@@ -226,10 +227,10 @@ class _ClimateScreenState extends State<ClimateScreen> {
                   child: OutlinedButton.icon(
                     onPressed: () async {
                       await provider.disableDefrost();
-                      _showSnackBar('Defrost stopped');
+                      _showSnackBar(AppLocalizations.of(context)!.stop);
                     },
                     icon: const Icon(Icons.stop),
-                    label: const Text('Stop'),
+                    label: Text(AppLocalizations.of(context)!.stop),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: AppTheme.accentRed,
                       side: const BorderSide(color: AppTheme.accentRed),
@@ -275,10 +276,10 @@ class _ClimateScreenState extends State<ClimateScreen> {
                     onPressed: () {
                       // Seat 0 = Driver, Level 3 = High
                       provider.setHeater(0, 3);
-                      _showSnackBar('Seat heating started');
+                      _showSnackBar(AppLocalizations.of(context)!.heat);
                     },
                     icon: const Icon(Icons.local_fire_department),
-                    label: const Text('Heat'),
+                    label: Text(AppLocalizations.of(context)!.heat),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: AppTheme.accentRed,
                       side: const BorderSide(color: AppTheme.accentRed),
@@ -290,10 +291,10 @@ class _ClimateScreenState extends State<ClimateScreen> {
                   child: OutlinedButton.icon(
                     onPressed: () {
                       provider.setCooler(0, 3);
-                      _showSnackBar('Seat cooling started');
+                      _showSnackBar(AppLocalizations.of(context)!.cool);
                     },
                     icon: const Icon(Icons.ac_unit),
-                    label: const Text('Cool'),
+                    label: Text(AppLocalizations.of(context)!.cool),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: AppTheme.primaryBlue,
                       side: const BorderSide(color: AppTheme.primaryBlue),
@@ -330,10 +331,10 @@ class _ClimateScreenState extends State<ClimateScreen> {
                   child: OutlinedButton.icon(
                     onPressed: () async {
                       await provider.enableWheelHeater();
-                      _showSnackBar('Steering wheel heater started');
+                      _showSnackBar(AppLocalizations.of(context)!.start);
                     },
                     icon: const Icon(Icons.local_fire_department),
-                    label: const Text('Start'),
+                    label: Text(AppLocalizations.of(context)!.start),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: AppTheme.accentRed,
                       side: const BorderSide(color: AppTheme.accentRed),
@@ -345,10 +346,10 @@ class _ClimateScreenState extends State<ClimateScreen> {
                   child: OutlinedButton.icon(
                     onPressed: () async {
                       await provider.disableWheelHeater();
-                      _showSnackBar('Steering wheel heater stopped');
+                      _showSnackBar(AppLocalizations.of(context)!.stop);
                     },
                     icon: const Icon(Icons.stop),
-                    label: const Text('Stop'),
+                    label: Text(AppLocalizations.of(context)!.stop),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: AppTheme.accentGreen,
                       side: const BorderSide(color: AppTheme.accentGreen),

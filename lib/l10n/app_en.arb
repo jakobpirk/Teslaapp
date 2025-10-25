@@ -1,0 +1,211 @@
+{
+  "@@locale": "en",
+
+  "@_APP_GENERAL": {},
+  "appTitle": "Tessie",
+  "appSubtitle": "Control your Tesla",
+  "ok": "OK",
+  "cancel": "Cancel",
+  "close": "Close",
+  "save": "Save",
+  "delete": "Delete",
+  "edit": "Edit",
+  "add": "Add",
+  "update": "Update",
+  "remove": "Remove",
+  "select": "Select",
+  "confirm": "Confirm",
+  "yes": "Yes",
+  "no": "No",
+  "loading": "Loading...",
+  "error": "Error",
+  "success": "Success",
+
+  "@_AUTH": {},
+  "welcomeBack": "Welcome Back",
+  "signInToContinue": "Sign in to continue",
+  "email": "Email",
+  "password": "Password",
+  "forgotPassword": "Forgot Password?",
+  "createAccount": "Create Account",
+  "joinUs": "Join us",
+  "fullName": "Full Name",
+  "confirmPassword": "Confirm Password",
+  "signUp": "Sign Up",
+  "resetPassword": "Reset Password",
+  "enterYourEmail": "Enter your email to reset password",
+  "passwordResetSuccessfully": "Password reset successfully!",
+  "resetCode": "Reset Code",
+  "newPassword": "New Password",
+  "signIn": "Sign In",
+  "sendResetCode": "Send Reset Code",
+  "alreadyHaveAccount": "Already have an account?",
+  "dontHaveAccount": "Don't have an account?",
+
+  "@_HOME": {},
+  "myTesla": "My Tesla",
+  "quickActions": "Quick Actions",
+  "climateControl": "Climate Control",
+  "climateControlDesc": "Manage temperature and defrost",
+  "charging": "Charging",
+  "chargingDesc": "Control charging and set limits",
+  "chargingDashboard": "Charging Dashboard",
+  "chargingDashboardDesc": "View stats, history & pricing",
+  "sentryMode": "Sentry Mode",
+  "sentryModeActive": "Active",
+  "sentryModeInactive": "Inactive",
+  "lock": "Lock",
+  "unlock": "Unlock",
+  "flashLights": "Flash Lights",
+  "honkHorn": "Honk Horn",
+  "start": "Start",
+  "stop": "Stop",
+  "heat": "Heat",
+  "cool": "Cool",
+  "defrost": "Defrost",
+
+  "@_CLIMATE": {},
+  "climateActive": "Climate Active",
+  "climateOff": "Climate Off",
+  "inside": "Inside: {temp}°C",
+  "@inside": {
+    "placeholders": {
+      "temp": {
+        "type": "String"
+      }
+    }
+  },
+  "outside": "Outside: {temp}°C",
+  "@outside": {
+    "placeholders": {
+      "temp": {
+        "type": "String"
+      }
+    }
+  },
+
+  "@_CHARGING": {},
+  "chargingStarted": "Charging started",
+  "chargingStopped": "Charging stopped",
+  "chargeLimitSet": "Charge limit set to {limit}%",
+  "@chargeLimitSet": {
+    "placeholders": {
+      "limit": {
+        "type": "int"
+      }
+    }
+  },
+  "autoChargingStarted": "Auto-charging started",
+  "autoStopEnabled": "Auto-stop enabled",
+  "autoStopDisabled": "Auto-stop disabled",
+  "setChargeLimit": "Set Charge Limit",
+  "currentCharge": "Current: {percent}%",
+  "@currentCharge": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "targetCharge": "Target: {percent}%",
+  "@targetCharge": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+
+  "@_VEHICLE": {},
+  "myVehicles": "My Vehicles",
+  "addVehicle": "Add Vehicle",
+  "editVehicle": "Edit Vehicle",
+  "deleteVehicle": "Delete Vehicle",
+  "noVehiclesAdded": "No vehicles added yet",
+  "vehicleName": "Vehicle Name",
+  "vin": "VIN",
+  "vehicleAdded": "Vehicle added successfully",
+  "vehicleUpdated": "Vehicle updated successfully",
+  "vehicleDeleted": "Vehicle deleted successfully",
+  "confirmDelete": "Are you sure you want to delete this vehicle?",
+  "deleteConfirmation": "Delete Confirmation",
+  "viewStatistics": "View Statistics",
+  "totalSessions": "Total Sessions",
+  "totalEnergy": "Total Energy",
+  "totalCost": "Total Cost",
+  "avgCostPerSession": "Avg Cost/Session",
+  "sessions": "{count} sessions",
+  "@sessions": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "kWh": "{value} kWh",
+  "@kWh": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+
+  "@_SETTINGS": {},
+  "settings": "Settings",
+  "profile": "Profile",
+  "name": "Name",
+  "vehicles": "Vehicles",
+  "tessieApiKey": "Tessie API Key",
+  "configured": "Configured",
+  "notConfigured": "Not configured",
+  "electricityProvider": "Electricity Provider",
+  "selectProvider": "Select Provider",
+  "changeProvider": "Change Provider",
+  "apiKeyUpdated": "API key updated",
+  "providerUpdated": "Provider updated",
+  "language": "Language",
+  "selectLanguage": "Select Language",
+  "languageUpdated": "Language updated successfully",
+
+  "@_STATUS": {},
+  "battery": "Battery",
+  "range": "Range",
+  "status": "Status",
+  "climate": "Climate",
+  "locked": "Locked",
+  "unlocked": "Unlocked",
+  "charging": "Charging",
+  "notCharging": "Not Charging",
+  "parked": "Parked",
+  "driving": "Driving",
+
+  "@_NOTIFICATIONS": {},
+  "vehicleLocked": "Vehicle locked",
+  "vehicleUnlocked": "Vehicle unlocked",
+  "lightsFlashed": "Lights flashed",
+  "hornHonked": "Horn honked",
+  "sentryModeToggled": "Sentry mode toggled",
+  "notificationsEnabled": "Notifications enabled",
+  "notificationsDisabled": "Notifications disabled",
+
+  "@_ERRORS": {},
+  "pleaseFillRequiredFields": "Please fill in all required fields",
+  "failedWithError": "Failed: {error}",
+  "@failedWithError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "somethingWentWrong": "Something went wrong",
+  "tryAgain": "Try again",
+
+  "@_WEB": {},
+  "demoPreview": "Demo Preview",
+  "demoPreviewMessage": "This is a demo preview using mock data",
+  "downloadMobileApp": "Download the mobile app for real vehicle control",
+  "ios": "iOS",
+  "android": "Android"
+}

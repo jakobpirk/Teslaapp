@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../providers/auth_provider.dart';
 import 'reset_password_screen.dart';
 
@@ -144,13 +145,14 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
                           // Email Field
                           _buildTextField(
+                            context: context,
                             controller: _emailController,
-                            label: 'Email',
+                            label: AppLocalizations.of(context)!.email,
                             icon: Icons.email_outlined,
                             keyboardType: TextInputType.emailAddress,
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return 'Please enter your email';
+                                return AppLocalizations.of(context)!.pleaseFillRequiredFields;
                               }
                               if (!value.contains('@')) {
                                 return 'Please enter a valid email';
@@ -183,8 +185,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                         strokeWidth: 2.5,
                                       ),
                                     )
-                                  : const Text(
-                                      'Send Reset Code',
+                                  : Text(
+                                      AppLocalizations.of(context)!.sendResetCode,
                                       style: TextStyle(
                                         fontSize: 18,
                                         fontWeight: FontWeight.bold,
@@ -209,6 +211,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   }
 
   Widget _buildTextField({
+    required BuildContext context,
     required TextEditingController controller,
     required String label,
     required IconData icon,

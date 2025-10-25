@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:device_frame/device_frame.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 /// Web shell that wraps the mobile app in an iPhone frame
 /// This provides a realistic preview of the mobile app on web
@@ -75,22 +76,24 @@ class WebShell extends StatelessWidget {
                 width: 1,
               ),
             ),
-            child: Row(
-              children: const [
-                Icon(
-                  Icons.phone_iphone,
-                  color: Color(0xFF4A90E2),
-                  size: 16,
-                ),
-                SizedBox(width: 8),
-                Text(
-                  'Demo Preview',
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 14,
+            child: Builder(
+              builder: (context) => Row(
+                children: [
+                  const Icon(
+                    Icons.phone_iphone,
+                    color: Color(0xFF4A90E2),
+                    size: 16,
                   ),
-                ),
-              ],
+                  const SizedBox(width: 8),
+                  Text(
+                    AppLocalizations.of(context)!.demoPreview,
+                    style: const TextStyle(
+                      color: Colors.white70,
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -115,49 +118,51 @@ class WebShell extends StatelessWidget {
   }
 
   Widget _buildFooter() {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 20),
-      child: Column(
-        children: [
-          const Text(
-            'This is a demo preview using mock data',
-            style: TextStyle(
-              color: Colors.white60,
-              fontSize: 12,
-            ),
-          ),
-          const SizedBox(height: 4),
-          const Text(
-            'Download the mobile app for real vehicle control',
-            style: TextStyle(
-              color: Colors.white40,
-              fontSize: 11,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              TextButton.icon(
-                onPressed: null,
-                icon: const Icon(Icons.apple, size: 16, color: Colors.white54),
-                label: const Text(
-                  'iOS',
-                  style: TextStyle(color: Colors.white54, fontSize: 12),
-                ),
+    return Builder(
+      builder: (context) => Container(
+        padding: const EdgeInsets.symmetric(vertical: 20),
+        child: Column(
+          children: [
+            Text(
+              AppLocalizations.of(context)!.demoPreviewMessage,
+              style: const TextStyle(
+                color: Colors.white60,
+                fontSize: 12,
               ),
-              const SizedBox(width: 16),
-              TextButton.icon(
-                onPressed: null,
-                icon: const Icon(Icons.android, size: 16, color: Colors.white54),
-                label: const Text(
-                  'Android',
-                  style: TextStyle(color: Colors.white54, fontSize: 12),
-                ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              AppLocalizations.of(context)!.downloadMobileApp,
+              style: const TextStyle(
+                color: Colors.white40,
+                fontSize: 11,
               ),
-            ],
-          ),
-        ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                TextButton.icon(
+                  onPressed: null,
+                  icon: const Icon(Icons.apple, size: 16, color: Colors.white54),
+                  label: Text(
+                    AppLocalizations.of(context)!.ios,
+                    style: const TextStyle(color: Colors.white54, fontSize: 12),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                TextButton.icon(
+                  onPressed: null,
+                  icon: const Icon(Icons.android, size: 16, color: Colors.white54),
+                  label: Text(
+                    AppLocalizations.of(context)!.android,
+                    style: const TextStyle(color: Colors.white54, fontSize: 12),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../features/charging_stats/presentation/providers/charging_stats_provider.dart';
 import '../core/domain/entities/charging_session_entity.dart';
 import '../utils/app_theme.dart';
@@ -33,7 +34,7 @@ class _ChargingDashboardScreenState extends State<ChargingDashboardScreen> {
       backgroundColor: AppTheme.backgroundDark,
       appBar: AppBar(
         backgroundColor: AppTheme.cardDark,
-        title: const Text('Charging Dashboard'),
+        title: Text(AppLocalizations.of(context)!.chargingDashboard),
         actions: [
           Consumer<ChargingStatsProvider>(
             builder: (context, provider, _) {
@@ -58,7 +59,16 @@ class _ChargingDashboardScreenState extends State<ChargingDashboardScreen> {
       body: Consumer<ChargingStatsProvider>(
         builder: (context, provider, _) {
           if (provider.isLoading) {
-            return const Center(child: CircularProgressIndicator());
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const CircularProgressIndicator(),
+                  const SizedBox(height: 16),
+                  Text(AppLocalizations.of(context)!.loading),
+                ],
+              ),
+            );
           }
 
           if (provider.error != null) {
@@ -70,7 +80,7 @@ class _ChargingDashboardScreenState extends State<ChargingDashboardScreen> {
                       size: 64, color: AppTheme.accentRed),
                   const SizedBox(height: 16),
                   Text(
-                    'Error: ${provider.error}',
+                    '${AppLocalizations.of(context)!.error}: ${provider.error}',
                     style: TextStyle(color: AppTheme.textSecondary),
                     textAlign: TextAlign.center,
                   ),
@@ -78,7 +88,7 @@ class _ChargingDashboardScreenState extends State<ChargingDashboardScreen> {
                   ElevatedButton(
                     onPressed: () =>
                         provider.loadChargingSessions('default_vehicle'),
-                    child: const Text('Retry'),
+                    child: Text(AppLocalizations.of(context)!.tryAgain),
                   ),
                 ],
               ),
@@ -149,7 +159,7 @@ class _ChargingDashboardScreenState extends State<ChargingDashboardScreen> {
       children: [
         Expanded(
           child: _buildSummaryCard(
-            'Total Sessions',
+            AppLocalizations.of(context)!.totalSessions,
             '${provider.getSessionCount(days: 30)}',
             Icons.charging_station,
             AppTheme.primaryBlue,
@@ -158,8 +168,8 @@ class _ChargingDashboardScreenState extends State<ChargingDashboardScreen> {
         const SizedBox(width: 12),
         Expanded(
           child: _buildSummaryCard(
-            'Energy (30d)',
-            '${provider.getTotalEnergyAdded(days: 30).toStringAsFixed(1)} kWh',
+            AppLocalizations.of(context)!.totalEnergy,
+            AppLocalizations.of(context)!.kWh(provider.getTotalEnergyAdded(days: 30).toStringAsFixed(1)),
             Icons.bolt,
             AppTheme.accentYellow,
           ),
@@ -167,7 +177,7 @@ class _ChargingDashboardScreenState extends State<ChargingDashboardScreen> {
         const SizedBox(width: 12),
         Expanded(
           child: _buildSummaryCard(
-            'Total Cost',
+            AppLocalizations.of(context)!.totalCost,
             '\$${provider.getTotalCost(days: 30).toStringAsFixed(2)}',
             Icons.attach_money,
             AppTheme.accentGreen,
@@ -216,7 +226,7 @@ class _ChargingDashboardScreenState extends State<ChargingDashboardScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Charging Sessions',
+          AppLocalizations.of(context)!.chargingDashboard,
           style: TextStyle(
             color: AppTheme.textPrimary,
             fontSize: 18,
@@ -275,7 +285,7 @@ class _ChargingDashboardScreenState extends State<ChargingDashboardScreen> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '${session.energyAdded.toStringAsFixed(1)} kWh',
+                        AppLocalizations.of(context)!.kWh(session.energyAdded.toStringAsFixed(1)),
                         style: TextStyle(
                           color: AppTheme.accentGreen,
                           fontSize: 12,
@@ -350,8 +360,8 @@ class _ChargingDashboardScreenState extends State<ChargingDashboardScreen> {
               'Battery',
               '${session.startBatteryLevel.toStringAsFixed(0)}% → ${session.endBatteryLevel?.toStringAsFixed(0) ?? '?'}%',
               Icons.battery_charging_full),
-          _buildDetailRow('Energy Added',
-              '${session.energyAdded.toStringAsFixed(1)} kWh', Icons.bolt),
+          _buildDetailRow(AppLocalizations.of(context)!.totalEnergy,
+              AppLocalizations.of(context)!.kWh(session.energyAdded.toStringAsFixed(1)), Icons.bolt),
           if (session.peakChargingRate != null)
             _buildDetailRow('Peak Rate',
                 '${session.peakChargingRate!.toStringAsFixed(1)} kW', Icons.speed),
@@ -651,8 +661,8 @@ class _ChargingDashboardScreenState extends State<ChargingDashboardScreen> {
               ),
               Expanded(
                 child: _buildPricingInfo(
-                  'Energy',
-                  '${session.energyAdded.toStringAsFixed(1)} kWh',
+                  AppLocalizations.of(context)!.totalEnergy,
+                  AppLocalizations.of(context)!.kWh(session.energyAdded.toStringAsFixed(1)),
                   Icons.bolt,
                 ),
               ),

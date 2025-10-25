@@ -4,6 +4,8 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:provider/provider.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'core/di/injection_container.dart';
 import 'features/vehicle/presentation/providers/vehicle_provider.dart';
 import 'features/charging_stats/presentation/providers/charging_stats_provider.dart';
@@ -14,6 +16,7 @@ import 'screens/home_screen.dart';
 import 'utils/app_theme.dart';
 import 'web/web_shell.dart';
 import 'services/firebase_notification_service.dart';
+import 'providers/locale_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -71,18 +74,36 @@ class TessieApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        ChangeNotifierProvider(create: (_) => LocaleProvider()),
         ChangeNotifierProvider(create: (_) => sl<AuthProvider>()),
         ChangeNotifierProvider(create: (_) => sl<VehicleProvider>()),
         ChangeNotifierProvider(create: (_) => sl<ChargingStatsProvider>()),
         ChangeNotifierProvider(create: (_) => SmartChargingProvider()),
       ],
-      child: MaterialApp(
-        title: 'Tessie',
-        theme: AppTheme.darkTheme,
-        debugShowCheckedModeBanner: false,
-        home: kIsWeb
-            ? const WebShell(child: SplashScreen())
-            : const SplashScreen(),
+      child: Consumer<LocaleProvider>(
+        builder: (context, localeProvider, child) {
+          return MaterialApp(
+            title: 'Tessie',
+            theme: AppTheme.darkTheme,
+            debugShowCheckedModeBanner: false,
+            locale: localeProvider.locale,
+            localizationsDelegates: const [
+              AppLocalizations.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: const [
+              Locale('en'),
+              Locale('es'),
+              Locale('de'),
+              Locale('fr'),
+            ],
+            home: kIsWeb
+                ? const WebShell(child: SplashScreen())
+                : const SplashScreen(),
+          );
+        },
       ),
     );
   }
@@ -194,18 +215,18 @@ class _SplashScreenState extends State<SplashScreen>
                         ),
                       ),
                       const SizedBox(height: 24),
-                      const Text(
-                        'Tessie',
-                        style: TextStyle(
+                      Text(
+                        AppLocalizations.of(context)?.appTitle ?? 'Tessie',
+                        style: const TextStyle(
                           fontSize: 36,
                           fontWeight: FontWeight.bold,
                           color: AppTheme.textPrimary,
                         ),
                       ),
                       const SizedBox(height: 8),
-                      const Text(
-                        'Control your Tesla',
-                        style: TextStyle(
+                      Text(
+                        AppLocalizations.of(context)?.appSubtitle ?? 'Control your Tesla',
+                        style: const TextStyle(
                           fontSize: 16,
                           color: AppTheme.textSecondary,
                         ),

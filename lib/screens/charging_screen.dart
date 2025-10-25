@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../features/vehicle/presentation/providers/vehicle_provider.dart';
 import '../features/charging_stats/presentation/providers/smart_charging_provider.dart';
 import '../utils/app_theme.dart';
@@ -67,7 +68,7 @@ class _ChargingScreenState extends State<ChargingScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Charging'),
+        title: Text(AppLocalizations.of(context)!.charging),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
@@ -163,7 +164,7 @@ class _ChargingScreenState extends State<ChargingScreen> {
           ),
           const SizedBox(height: 16),
           Text(
-            isCharging ? 'Charging' : 'Not Charging',
+            isCharging ? AppLocalizations.of(context)!.charging : AppLocalizations.of(context)!.notCharging,
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w600,
@@ -256,18 +257,18 @@ class _ChargingScreenState extends State<ChargingScreen> {
           try {
             if (isCharging) {
               await provider.stopCharge();
-              _showSnackBar('Charging stopped');
+              _showSnackBar(AppLocalizations.of(context)!.chargingStopped);
             } else {
               await provider.startCharge();
-              _showSnackBar('Charging started');
+              _showSnackBar(AppLocalizations.of(context)!.chargingStarted);
             }
           } catch (e) {
-            _showSnackBar('Failed: ${e.toString()}', isError: true);
+            _showSnackBar(AppLocalizations.of(context)!.failedWithError(e.toString()), isError: true);
           }
         },
         icon: Icon(isCharging ? Icons.stop : Icons.bolt),
         label: Text(
-          isCharging ? 'Stop Charging' : 'Start Charging',
+          isCharging ? '${AppLocalizations.of(context)!.stop} ${AppLocalizations.of(context)!.charging}' : '${AppLocalizations.of(context)!.start} ${AppLocalizations.of(context)!.charging}',
           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
         ),
         style: ElevatedButton.styleFrom(
@@ -336,7 +337,7 @@ class _ChargingScreenState extends State<ChargingScreen> {
                 },
                 onChangeEnd: (value) {
                   provider.setLimit(value.toInt());
-                  _showSnackBar('Charge limit set to ${value.toInt()}%');
+                  _showSnackBar(AppLocalizations.of(context)!.chargeLimitSet(value.toInt()));
                 },
               ),
             ),
@@ -714,10 +715,10 @@ class _ChargingScreenState extends State<ChargingScreen> {
                         _maxChargeLimit.toInt(),
                         vehicleId: vehicleId,
                       );
-                      _showSnackBar('Auto-stop enabled at ${_maxChargeLimit.toInt()}%');
+                      _showSnackBar(AppLocalizations.of(context)!.autoStopEnabled);
                     } else {
                       await provider.setMaxChargeLimit(null, vehicleId: vehicleId);
-                      _showSnackBar('Auto-stop disabled');
+                      _showSnackBar(AppLocalizations.of(context)!.autoStopDisabled);
                     }
                   },
                   activeColor: AppTheme.accentGreen,
@@ -846,10 +847,10 @@ class _ChargingScreenState extends State<ChargingScreen> {
                     final vehicleId = _getVehicleId();
                     if (value) {
                       await provider.enableChargingNotifications(vehicleId: vehicleId);
-                      _showSnackBar('Notifications enabled');
+                      _showSnackBar(AppLocalizations.of(context)!.notificationsEnabled);
                     } else {
                       await provider.disableChargingNotifications(vehicleId: vehicleId);
-                      _showSnackBar('Notifications disabled');
+                      _showSnackBar(AppLocalizations.of(context)!.notificationsDisabled);
                     }
                   },
                   activeColor: AppTheme.primaryBlue,

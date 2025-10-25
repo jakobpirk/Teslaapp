@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../providers/auth_provider.dart';
 import 'login_screen.dart';
 
@@ -105,7 +106,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                     // Title
                     Text(
-                      'Create Account',
+                      AppLocalizations.of(context)!.createAccount,
                       style: TextStyle(
                         fontSize: 32,
                         fontWeight: FontWeight.bold,
@@ -118,7 +119,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     const SizedBox(height: 8),
 
                     Text(
-                      'Sign up to get started',
+                      AppLocalizations.of(context)!.joinUs,
                       style: TextStyle(
                         fontSize: 16,
                         color: Colors.white.withOpacity(0.7),
@@ -128,12 +129,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                     // Name Field
                     _buildTextField(
+                      context: context,
                       controller: _nameController,
-                      label: 'Full Name',
+                      label: AppLocalizations.of(context)!.fullName,
                       icon: Icons.person_outline,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Please enter your name';
+                          return AppLocalizations.of(context)!.pleaseFillRequiredFields;
                         }
                         return null;
                       },
@@ -142,13 +144,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                     // Email Field
                     _buildTextField(
+                      context: context,
                       controller: _emailController,
-                      label: 'Email',
+                      label: AppLocalizations.of(context)!.email,
                       icon: Icons.email_outlined,
                       keyboardType: TextInputType.emailAddress,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Please enter your email';
+                          return AppLocalizations.of(context)!.pleaseFillRequiredFields;
                         }
                         if (!value.contains('@')) {
                           return 'Please enter a valid email';
@@ -160,8 +163,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                     // Password Field
                     _buildTextField(
+                      context: context,
                       controller: _passwordController,
-                      label: 'Password',
+                      label: AppLocalizations.of(context)!.password,
                       icon: Icons.lock_outline,
                       obscureText: _obscurePassword,
                       suffixIcon: IconButton(
@@ -179,7 +183,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Please enter a password';
+                          return AppLocalizations.of(context)!.pleaseFillRequiredFields;
                         }
                         if (value.length < 8) {
                           return 'Password must be at least 8 characters';
@@ -191,8 +195,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                     // Confirm Password Field
                     _buildTextField(
+                      context: context,
                       controller: _confirmPasswordController,
-                      label: 'Confirm Password',
+                      label: AppLocalizations.of(context)!.confirmPassword,
                       icon: Icons.lock_outline,
                       obscureText: _obscureConfirmPassword,
                       suffixIcon: IconButton(
@@ -210,7 +215,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Please confirm your password';
+                          return AppLocalizations.of(context)!.pleaseFillRequiredFields;
                         }
                         if (value != _passwordController.text) {
                           return 'Passwords do not match';
@@ -243,8 +248,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   strokeWidth: 2.5,
                                 ),
                               )
-                            : const Text(
-                                'Sign Up',
+                            : Text(
+                                AppLocalizations.of(context)!.signUp,
                                 style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
@@ -262,7 +267,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          "Already have an account? ",
+                          AppLocalizations.of(context)!.alreadyHaveAccount,
                           style: TextStyle(
                             color: Colors.white.withOpacity(0.7),
                           ),
@@ -277,7 +282,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             );
                           },
                           child: Text(
-                            'Sign In',
+                            AppLocalizations.of(context)!.signIn,
                             style: TextStyle(
                               color: Colors.purple.shade300,
                               fontWeight: FontWeight.bold,
@@ -297,6 +302,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   Widget _buildTextField({
+    required BuildContext context,
     required TextEditingController controller,
     required String label,
     required IconData icon,
