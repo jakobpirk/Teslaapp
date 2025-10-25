@@ -114,6 +114,9 @@ class _VehicleManagementScreenState extends State<VehicleManagementScreen> {
                         case 'edit':
                           _showEditVehicleDialog(context, vehicle);
                           break;
+                        case 'charging_settings':
+                          _showChargingSettingsDialog(context, vehicle);
+                          break;
                         case 'delete':
                           _confirmDelete(context, vehicle);
                           break;
@@ -130,6 +133,16 @@ class _VehicleManagementScreenState extends State<VehicleManagementScreen> {
                       PopupMenuItem(
                         value: 'statistics',
                         child: Text(AppLocalizations.of(context)!.viewStatistics),
+                      ),
+                      const PopupMenuItem(
+                        value: 'charging_settings',
+                        child: Row(
+                          children: [
+                            Icon(Icons.ev_station, size: 20),
+                            SizedBox(width: 8),
+                            Text('Charging Settings'),
+                          ],
+                        ),
                       ),
                       PopupMenuItem(
                         value: 'edit',
@@ -337,5 +350,186 @@ class _VehicleManagementScreenState extends State<VehicleManagementScreen> {
         ),
       );
     }
+  }
+
+  void _showChargingSettingsDialog(BuildContext context, VehicleModelDto vehicle) {
+    // Use the vehicle's current settings or defaults
+    int chargeLimit = vehicle.chargeLimit ?? 80;
+    bool autoChargingEnabled = vehicle.autoChargingEnabled ?? false;
+    bool lowBatteryProtectionEnabled = vehicle.lowBatteryProtectionEnabled ?? false;
+    int lowBatteryThreshold = vehicle.lowBatteryThreshold ?? 20;
+    int lowBatteryStopLimit = vehicle.lowBatteryStopLimit ?? 80;
+
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: Row(
+            children: [
+              const Icon(Icons.ev_station),
+              const SizedBox(width: 8),
+              Text('${vehicle.displayName} - Charging Settings'),
+            ],
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Charge Limit',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Slider(
+                        value: chargeLimit.toDouble(),
+                        min: 50,
+                        max: 100,
+                        divisions: 50,
+                        label: '$chargeLimit%',
+                        onChanged: (value) {
+                          setDialogState(() {
+                            chargeLimit = value.toInt();
+                          });
+                        },
+                      ),
+                    ),
+                    SizedBox(
+                      width: 50,
+                      child: Text(
+                        '$chargeLimit%',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                SwitchListTile(
+                  title: const Text('Auto Charging'),
+                  subtitle: const Text('Enable smart charging recommendations'),
+                  value: autoChargingEnabled,
+                  onChanged: (value) {
+                    setDialogState(() {
+                      autoChargingEnabled = value;
+                    });
+                  },
+                ),
+                const Divider(),
+                SwitchListTile(
+                  title: const Text('Low Battery Protection'),
+                  subtitle: const Text('Automatically charge when battery is low'),
+                  value: lowBatteryProtectionEnabled,
+                  onChanged: (value) {
+                    setDialogState(() {
+                      lowBatteryProtectionEnabled = value;
+                    });
+                  },
+                ),
+                if (lowBatteryProtectionEnabled) ...[
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Low Battery Threshold',
+                    style: TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Slider(
+                          value: lowBatteryThreshold.toDouble(),
+                          min: 5,
+                          max: 95,
+                          divisions: 18,
+                          label: '$lowBatteryThreshold%',
+                          onChanged: (value) {
+                            setDialogState(() {
+                              lowBatteryThreshold = value.toInt();
+                              if (lowBatteryStopLimit <= lowBatteryThreshold) {
+                                lowBatteryStopLimit = lowBatteryThreshold + 10;
+                              }
+                            });
+                          },
+                        ),
+                      ),
+                      SizedBox(
+                        width: 50,
+                        child: Text('$lowBatteryThreshold%'),
+                      ),
+                    ],
+                  ),
+                  const Text(
+                    'Stop Charging At',
+                    style: TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Slider(
+                          value: lowBatteryStopLimit.toDouble(),
+                          min: 10,
+                          max: 100,
+                          divisions: 18,
+                          label: '$lowBatteryStopLimit%',
+                          onChanged: (value) {
+                            setDialogState(() {
+                              lowBatteryStopLimit = value.toInt();
+                            });
+                          },
+                        ),
+                      ),
+                      SizedBox(
+                        width: 50,
+                        child: Text('$lowBatteryStopLimit%'),
+                      ),
+                    ],
+                  ),
+                ],
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(AppLocalizations.of(context)!.cancel),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                if (lowBatteryProtectionEnabled && lowBatteryStopLimit <= lowBatteryThreshold) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Stop limit must be greater than threshold'),
+                    ),
+                  );
+                  return;
+                }
+
+                final updateDto = UpdateVehicleDto(
+                  chargeLimit: chargeLimit,
+                  autoChargingEnabled: autoChargingEnabled,
+                  lowBatteryProtectionEnabled: lowBatteryProtectionEnabled,
+                  lowBatteryThreshold: lowBatteryThreshold,
+                  lowBatteryStopLimit: lowBatteryStopLimit,
+                );
+
+                final success = await context
+                    .read<VehicleManagementProvider>()
+                    .updateVehicle(vehicle.id, updateDto);
+
+                if (success && context.mounted) {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Charging settings updated successfully'),
+                    ),
+                  );
+                }
+              },
+              child: const Text('Save'),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

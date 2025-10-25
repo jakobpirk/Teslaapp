@@ -24,6 +24,11 @@ class Vehicle extends Model
         'battery_capacity',
         'is_active',
         'vehicle_config',
+        'charge_limit',
+        'auto_charging_enabled',
+        'low_battery_protection_enabled',
+        'low_battery_threshold',
+        'low_battery_stop_limit',
     ];
 
     protected $casts = [
@@ -31,6 +36,11 @@ class Vehicle extends Model
         'battery_capacity' => 'decimal:2',
         'is_active' => 'boolean',
         'vehicle_config' => 'array',
+        'charge_limit' => 'integer',
+        'auto_charging_enabled' => 'boolean',
+        'low_battery_protection_enabled' => 'boolean',
+        'low_battery_threshold' => 'integer',
+        'low_battery_stop_limit' => 'integer',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
