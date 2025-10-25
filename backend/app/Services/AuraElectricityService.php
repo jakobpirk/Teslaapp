@@ -51,6 +51,15 @@ class AuraElectricityService
                 return null;
             }
 
+            // Validate response structure
+            if (!isset($data['chartSeries']) || !is_array($data['chartSeries'])) {
+                Log::error('Invalid Aura API response structure', [
+                    'date' => $dateString,
+                    'has_chart_series' => isset($data['chartSeries']),
+                ]);
+                return null;
+            }
+
             return $data;
         } catch (\Exception $e) {
             Log::error('Exception while fetching Aura pricing data', [
@@ -113,6 +122,7 @@ class AuraElectricityService
         $chartSeries = $data['chartSeries'] ?? [];
 
         if (empty($chartSeries)) {
+            Log::warning('No chart series data to store', ['date' => $dateString]);
             return;
         }
 
@@ -141,9 +151,10 @@ class AuraElectricityService
         // Store each hourly price for both regions
         foreach (['east', 'west'] as $region) {
             foreach ($hourlyPrices[$region] as $hour => $price) {
-                $timestamp = Carbon::createFromFormat('Y-m-d H', "$dateString $hour");
+                try {
+                    $timestamp = Carbon::createFromFormat('Y-m-d H', "$dateString $hour");
 
-                PricingHistory::updateOrCreate(
+                    PricingHistory::updateOrCreate(
                     [
                         'timestamp' => $timestamp,
                         'utility_provider' => 'Aura',
@@ -161,6 +172,14 @@ class AuraElectricityService
                         ],
                     ]
                 );
+                } catch (\Exception $e) {
+                    Log::error('Failed to store hourly price', [
+                        'date' => $dateString,
+                        'hour' => $hour,
+                        'region' => $region,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
             }
         }
     }

@@ -47,15 +47,26 @@ class TessieService
 
             $data = $response->json();
 
+            // Validate response structure
+            if (!isset($data['charge_state'])) {
+                Log::error('Invalid Tessie API response structure', [
+                    'vehicle_id' => $vehicle->id,
+                    'response' => $data,
+                ]);
+                return null;
+            }
+
+            $chargeState = $data['charge_state'];
+
             return [
-                'battery_level' => $data['charge_state']['battery_level'] ?? 0,
-                'battery_range' => $data['charge_state']['battery_range'] ?? 0,
-                'charging_state' => $data['charge_state']['charging_state'] ?? 'Disconnected',
-                'is_charging' => ($data['charge_state']['charging_state'] ?? '') === 'Charging',
-                'charge_rate' => $data['charge_state']['charge_rate'] ?? 0,
-                'charge_limit_soc' => $data['charge_state']['charge_limit_soc'] ?? 80,
+                'battery_level' => $chargeState['battery_level'] ?? 0,
+                'battery_range' => $chargeState['battery_range'] ?? 0,
+                'charging_state' => $chargeState['charging_state'] ?? 'Disconnected',
+                'is_charging' => ($chargeState['charging_state'] ?? '') === 'Charging',
+                'charge_rate' => $chargeState['charge_rate'] ?? 0,
+                'charge_limit_soc' => $chargeState['charge_limit_soc'] ?? 80,
                 'is_plugged_in' => in_array(
-                    $data['charge_state']['charging_state'] ?? '',
+                    $chargeState['charging_state'] ?? '',
                     ['Charging', 'Stopped', 'Complete']
                 ),
                 'raw_data' => $data,

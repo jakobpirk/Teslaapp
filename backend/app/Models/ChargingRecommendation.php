@@ -51,8 +51,11 @@ class ChargingRecommendation extends Model
 
     /**
      * Get the latest recommendation for a vehicle
+     *
+     * @param string $vehicleId
+     * @return ChargingRecommendation|null
      */
-    public static function getLatestForVehicle(string $vehicleId)
+    public static function getLatestForVehicle(string $vehicleId): ?ChargingRecommendation
     {
         return static::where('vehicle_id', $vehicleId)
             ->where('status', 'pending')
@@ -62,10 +65,12 @@ class ChargingRecommendation extends Model
 
     /**
      * Mark recommendation as executed
+     *
+     * @return bool
      */
-    public function markAsExecuted()
+    public function markAsExecuted(): bool
     {
-        $this->update([
+        return $this->update([
             'status' => 'executed',
             'executed_at' => now(),
         ]);
