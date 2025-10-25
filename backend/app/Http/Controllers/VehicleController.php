@@ -61,7 +61,8 @@ class VehicleController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
-            'tessie_vehicle_id' => 'required|string|unique:vehicles,tessie_vehicle_id',
+            'api_provider' => 'required|string|in:tessie,tesla',
+            'provider_vehicle_id' => 'required|string',
             'display_name' => 'required|string|max:255',
             'vin' => 'nullable|string|max:17',
             'model' => 'nullable|string|max:50',
@@ -80,16 +81,32 @@ class VehicleController extends Controller
         }
 
         $user = $request->user();
+        $data = $validator->validated();
 
-        // Check if user has Tessie API key configured
-        if (!$user->hasTessieApiKey()) {
+        // Check for duplicate provider_vehicle_id for the same provider
+        $existingVehicle = Vehicle::where('provider_vehicle_id', $data['provider_vehicle_id'])
+            ->where('api_provider', $data['api_provider'])
+            ->first();
+
+        if ($existingVehicle) {
             return response()->json([
                 'success' => false,
-                'message' => 'Please configure your Tessie API key first',
+                'message' => 'This vehicle is already registered with the specified provider',
+            ], 422);
+        }
+
+        // Check if user has the appropriate API key configured
+        $apiProvider = $data['api_provider'];
+        $apiKeyMethod = 'has' . ucfirst($apiProvider) . 'ApiKey';
+
+        if (method_exists($user, $apiKeyMethod) && !$user->$apiKeyMethod()) {
+            return response()->json([
+                'success' => false,
+                'message' => "Please configure your {$apiProvider} API key first",
             ], 400);
         }
 
-        $vehicle = $user->vehicles()->create($validator->validated());
+        $vehicle = $user->vehicles()->create($data);
 
         return response()->json([
             'success' => true,

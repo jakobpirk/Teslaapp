@@ -14,7 +14,8 @@ class Vehicle extends Model
 
     protected $fillable = [
         'user_id',
-        'tessie_vehicle_id',
+        'api_provider',
+        'provider_vehicle_id',
         'display_name',
         'vin',
         'model',
@@ -35,7 +36,7 @@ class Vehicle extends Model
     ];
 
     protected $hidden = [
-        'tessie_vehicle_id', // Hide for security
+        'provider_vehicle_id', // Hide provider-specific ID for security
     ];
 
     /**
@@ -96,5 +97,60 @@ class Vehicle extends Model
         return $this->chargingRecommendations()
             ->orderBy('created_at', 'desc')
             ->first();
+    }
+
+    /**
+     * Check if the vehicle uses a specific API provider
+     */
+    public function usesProvider(string $providerName): bool
+    {
+        return strtolower($this->api_provider) === strtolower($providerName);
+    }
+
+    /**
+     * Check if the vehicle uses Tessie API
+     */
+    public function usesTessie(): bool
+    {
+        return $this->usesProvider('tessie');
+    }
+
+    /**
+     * Check if the vehicle uses Tesla official API
+     */
+    public function usesTesla(): bool
+    {
+        return $this->usesProvider('tesla');
+    }
+
+    /**
+     * Scope to filter vehicles by API provider
+     */
+    public function scopeByProvider($query, string $provider)
+    {
+        return $query->where('api_provider', strtolower($provider));
+    }
+
+    /**
+     * Get the API key for this vehicle's provider from the user
+     *
+     * @return string|null
+     */
+    public function getProviderApiKey(): ?string
+    {
+        if (!$this->user) {
+            return null;
+        }
+
+        // Map provider to user's API key field
+        $keyMap = [
+            'tessie' => 'tessie_api_key',
+            'tesla' => 'tesla_api_key',
+            // Add more mappings as needed
+        ];
+
+        $keyField = $keyMap[$this->api_provider] ?? null;
+
+        return $keyField ? $this->user->$keyField : null;
     }
 }
