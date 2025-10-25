@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:provider/provider.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -11,6 +12,7 @@ import 'features/auth/presentation/providers/auth_provider.dart';
 import 'features/auth/presentation/screens/login_screen.dart';
 import 'screens/home_screen.dart';
 import 'utils/app_theme.dart';
+import 'web/web_shell.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -35,11 +37,13 @@ void main() async {
   // Initialize dependency injection
   await initializeDependencies();
 
-  // Set preferred orientations
-  await SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-    DeviceOrientation.portraitDown,
-  ]);
+  // Set preferred orientations (skip on web as it's not applicable)
+  if (!kIsWeb) {
+    await SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+  }
 
   runApp(const TessieApp());
 }
@@ -60,7 +64,9 @@ class TessieApp extends StatelessWidget {
         title: 'Tessie',
         theme: AppTheme.darkTheme,
         debugShowCheckedModeBanner: false,
-        home: const SplashScreen(),
+        home: kIsWeb
+            ? const WebShell(child: SplashScreen())
+            : const SplashScreen(),
       ),
     );
   }

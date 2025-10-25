@@ -2,6 +2,7 @@ import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:local_auth/local_auth.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
@@ -10,7 +11,8 @@ import '../data/datasources/vehicle_remote_data_source.dart';
 import '../data/repositories/vehicle_repository_impl.dart';
 import '../data/datasources/charging_stats_http_datasource.dart';
 import '../data/repositories/charging_stats_repository_impl.dart';
-import '../data/datasources/face_auth_local_data_source.dart';
+import '../data/datasources/face_auth_local_data_source.dart'
+  if (dart.library.html) '../data/datasources/face_auth_local_data_source_web.dart';
 import '../data/datasources/face_auth_http_data_source.dart';
 import '../data/repositories/face_auth_repository_impl.dart';
 import '../data/datasources/auth_remote_data_source.dart';
@@ -174,15 +176,16 @@ Future<void> initializeDependencies() async {
   );
 
   // Face Authentication - External dependencies
-  sl.registerLazySingleton(() => LocalAuthentication());
+  if (!kIsWeb) {
+    sl.registerLazySingleton(() => LocalAuthentication());
+  }
   sl.registerLazySingleton(() => const FlutterSecureStorage());
 
   // Face Authentication - Data sources
   sl.registerLazySingleton<FaceAuthLocalDataSource>(
-    () => FaceAuthLocalDataSourceImpl(
-      localAuth: sl(),
-      secureStorage: sl(),
-    ),
+    () => kIsWeb
+      ? FaceAuthLocalDataSourceImpl(secureStorage: sl())
+      : FaceAuthLocalDataSourceImpl(localAuth: sl(), secureStorage: sl()),
   );
 
   sl.registerLazySingleton<FaceAuthHttpDataSource>(
