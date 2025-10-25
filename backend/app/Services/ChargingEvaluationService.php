@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\User;
 use App\Models\Vehicle;
+use App\Contracts\VehicleApiProviderContract;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 
@@ -12,15 +13,23 @@ class ChargingEvaluationService
     private const DEFAULT_TARGET_BATTERY_LEVEL = 80; // Default target battery level in percent
     private const DEFAULT_BATTERY_CAPACITY_KWH = 75.0; // Default battery capacity in kWh
 
-    protected TessieService $tessieService;
     protected SmartChargingService $smartChargingService;
 
     public function __construct(
-        TessieService $tessieService,
         SmartChargingService $smartChargingService
     ) {
-        $this->tessieService = $tessieService;
         $this->smartChargingService = $smartChargingService;
+    }
+
+    /**
+     * Get the appropriate API provider for a vehicle
+     *
+     * @param Vehicle $vehicle
+     * @return VehicleApiProviderContract
+     */
+    protected function getProvider(Vehicle $vehicle): VehicleApiProviderContract
+    {
+        return VehicleApiProviderFactory::make($vehicle->api_provider);
     }
 
     /**
@@ -32,14 +41,31 @@ class ChargingEvaluationService
      */
     public function evaluateAndExecute(Vehicle $vehicle, User $user): array
     {
-        // Get current vehicle state
-        $state = $this->tessieService->getVehicleState($vehicle, $user);
+        // Get the appropriate API provider for this vehicle
+        $provider = $this->getProvider($vehicle);
+        $apiKey = $vehicle->getProviderApiKey();
 
-        if (!$state) {
+        if (!$apiKey) {
             return [
                 'success' => false,
                 'action_taken' => false,
-                'message' => 'Failed to fetch vehicle state',
+                'message' => 'API key not configured for vehicle provider',
+            ];
+        }
+
+        // Get current vehicle state
+        try {
+            $state = $provider->getVehicleState($vehicle->provider_vehicle_id, $apiKey);
+        } catch (\Exception $e) {
+            Log::error('Failed to fetch vehicle state', [
+                'vehicle_id' => $vehicle->id,
+                'provider' => $vehicle->api_provider,
+                'error' => $e->getMessage(),
+            ]);
+            return [
+                'success' => false,
+                'action_taken' => false,
+                'message' => 'Failed to fetch vehicle state: ' . $e->getMessage(),
             ];
         }
 
@@ -66,7 +92,7 @@ class ChargingEvaluationService
 
         // Check low battery protection first (highest priority)
         if ($user->isLowBatteryProtectionEnabled()) {
-            $result = $this->evaluateLowBatteryProtection($vehicle, $user, $state);
+            $result = $this->evaluateLowBatteryProtection($vehicle, $user, $state, $provider, $apiKey);
             if ($result['action_taken']) {
                 return $result;
             }
@@ -82,8 +108,8 @@ class ChargingEvaluationService
                     'stop_limit' => $stopLimit,
                 ]);
 
-                $stopped = $this->tessieService->stopCharging($vehicle, $user);
-                if ($stopped) {
+                try {
+                    $provider->stopCharging($vehicle->provider_vehicle_id, $apiKey);
                     return [
                         'success' => true,
                         'action_taken' => true,
@@ -91,12 +117,17 @@ class ChargingEvaluationService
                         'message' => "Emergency charging stopped at {$batteryLevel}% (stop limit: {$stopLimit}%)",
                         'battery_level' => $batteryLevel,
                     ];
+                } catch (\Exception $e) {
+                    Log::error('Failed to stop emergency charging', [
+                        'vehicle_id' => $vehicle->id,
+                        'error' => $e->getMessage(),
+                    ]);
                 }
             }
         }
 
         // Normal smart charging evaluation
-        return $this->evaluateSmartCharging($vehicle, $user, $state);
+        return $this->evaluateSmartCharging($vehicle, $user, $state, $provider, $apiKey);
     }
 
     /**
@@ -105,10 +136,17 @@ class ChargingEvaluationService
      * @param Vehicle $vehicle
      * @param User $user
      * @param array $state
+     * @param VehicleApiProviderContract $provider
+     * @param string $apiKey
      * @return array
      */
-    protected function evaluateLowBatteryProtection(Vehicle $vehicle, User $user, array $state): array
-    {
+    protected function evaluateLowBatteryProtection(
+        Vehicle $vehicle,
+        User $user,
+        array $state,
+        VehicleApiProviderContract $provider,
+        string $apiKey
+    ): array {
         $batteryLevel = $state['battery_level'];
         $isCharging = $state['is_charging'];
         $threshold = $user->getLowBatteryThreshold();
@@ -130,14 +168,14 @@ class ChargingEvaluationService
                 'threshold' => $threshold,
             ]);
 
-            // Set charge limit to stop limit if configured
-            if ($stopLimit) {
-                $this->tessieService->setChargeLimit($vehicle, $user, $stopLimit);
-            }
+            try {
+                // Set charge limit to stop limit if configured
+                if ($stopLimit) {
+                    $provider->setChargeLimit($vehicle->provider_vehicle_id, $apiKey, $stopLimit);
+                }
 
-            $started = $this->tessieService->startCharging($vehicle, $user);
+                $provider->startCharging($vehicle->provider_vehicle_id, $apiKey);
 
-            if ($started) {
                 return [
                     'success' => true,
                     'action_taken' => true,
@@ -146,13 +184,17 @@ class ChargingEvaluationService
                     'battery_level' => $batteryLevel,
                     'reason' => 'low_battery_protection',
                 ];
+            } catch (\Exception $e) {
+                Log::error('Failed to start emergency charging', [
+                    'vehicle_id' => $vehicle->id,
+                    'error' => $e->getMessage(),
+                ]);
+                return [
+                    'success' => false,
+                    'action_taken' => false,
+                    'message' => 'Failed to start emergency charging: ' . $e->getMessage(),
+                ];
             }
-
-            return [
-                'success' => false,
-                'action_taken' => false,
-                'message' => 'Failed to start emergency charging',
-            ];
         }
 
         return [
@@ -168,10 +210,17 @@ class ChargingEvaluationService
      * @param Vehicle $vehicle
      * @param User $user
      * @param array $state
+     * @param VehicleApiProviderContract $provider
+     * @param string $apiKey
      * @return array
      */
-    protected function evaluateSmartCharging(Vehicle $vehicle, User $user, array $state): array
-    {
+    protected function evaluateSmartCharging(
+        Vehicle $vehicle,
+        User $user,
+        array $state,
+        VehicleApiProviderContract $provider,
+        string $apiKey
+    ): array {
         $batteryLevel = $state['battery_level'];
         $isCharging = $state['is_charging'];
 
@@ -207,9 +256,8 @@ class ChargingEvaluationService
                     'recommendation_id' => $recommendation->id,
                 ]);
 
-                $started = $this->tessieService->startCharging($vehicle, $user);
-
-                if ($started) {
+                try {
+                    $provider->startCharging($vehicle->provider_vehicle_id, $apiKey);
                     $recommendation->update(['status' => 'executed']);
 
                     return [
@@ -222,13 +270,17 @@ class ChargingEvaluationService
                         'estimated_cost' => $recommendation->estimated_cost,
                         'cost_savings' => $recommendation->cost_savings,
                     ];
+                } catch (\Exception $e) {
+                    Log::error('Failed to start smart charging', [
+                        'vehicle_id' => $vehicle->id,
+                        'error' => $e->getMessage(),
+                    ]);
+                    return [
+                        'success' => false,
+                        'action_taken' => false,
+                        'message' => 'Failed to start charging: ' . $e->getMessage(),
+                    ];
                 }
-
-                return [
-                    'success' => false,
-                    'action_taken' => false,
-                    'message' => 'Failed to start charging',
-                ];
             }
 
             // Stop charging if not recommended and currently charging
@@ -239,9 +291,8 @@ class ChargingEvaluationService
                     'recommendation_id' => $recommendation->id,
                 ]);
 
-                $stopped = $this->tessieService->stopCharging($vehicle, $user);
-
-                if ($stopped) {
+                try {
+                    $provider->stopCharging($vehicle->provider_vehicle_id, $apiKey);
                     return [
                         'success' => true,
                         'action_taken' => true,
@@ -250,13 +301,17 @@ class ChargingEvaluationService
                         'battery_level' => $batteryLevel,
                         'recommendation_id' => $recommendation->id,
                     ];
+                } catch (\Exception $e) {
+                    Log::error('Failed to stop smart charging', [
+                        'vehicle_id' => $vehicle->id,
+                        'error' => $e->getMessage(),
+                    ]);
+                    return [
+                        'success' => false,
+                        'action_taken' => false,
+                        'message' => 'Failed to stop charging: ' . $e->getMessage(),
+                    ];
                 }
-
-                return [
-                    'success' => false,
-                    'action_taken' => false,
-                    'message' => 'Failed to stop charging',
-                ];
             }
 
             // No action needed
