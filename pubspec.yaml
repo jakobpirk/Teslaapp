@@ -51,6 +51,11 @@ dependencies:
   local_auth_ios: ^1.1.5
   flutter_secure_storage: ^9.0.0
 
+  # Notifications & Background Tasks
+  flutter_local_notifications: ^17.0.0
+  workmanager: ^0.5.2
+  permission_handler: ^11.0.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -8,6 +8,7 @@ import '../../../../core/domain/usecases/climate_operations.dart';
 import '../../../../core/domain/usecases/charging_operations.dart';
 import '../../../../core/domain/usecases/security_operations.dart';
 import '../../../../core/domain/usecases/vehicle_access_operations.dart';
+import '../../../../services/charging_monitor_service.dart';
 
 /// Provider for vehicle state and operations
 /// Uses use cases to interact with the domain layer
@@ -43,6 +44,9 @@ class VehicleProvider with ChangeNotifier {
   bool _isLoading = false;
   String? _error;
   DateTime? _lastRefresh;
+
+  // Charging monitor service
+  final ChargingMonitorService _chargingMonitor = ChargingMonitorService();
 
   VehicleProvider({
     required this.getVehicleState,
@@ -184,11 +188,15 @@ class VehicleProvider with ChangeNotifier {
   /// Start charging
   Future<void> startCharge() async {
     await _executeCommand(() => startCharging.call());
+    // Check charging state after starting
+    await _chargingMonitor.checkChargingState();
   }
 
   /// Stop charging
   Future<void> stopCharge() async {
     await _executeCommand(() => stopCharging.call());
+    // Check charging state after stopping
+    await _chargingMonitor.checkChargingState();
   }
 
   /// Set charge limit
@@ -196,6 +204,40 @@ class VehicleProvider with ChangeNotifier {
     await _executeCommand(
       () => setChargeLimit.call(ChargeLimitParams(limit)),
     );
+  }
+
+  /// Set max charge limit (for auto-stop)
+  Future<void> setMaxChargeLimit(int? limit) async {
+    await _chargingMonitor.setMaxChargeLimit(limit);
+    notifyListeners();
+  }
+
+  /// Get max charge limit
+  Future<int?> getMaxChargeLimit() async {
+    return await _chargingMonitor.getMaxChargeLimit();
+  }
+
+  /// Enable charging notifications
+  Future<void> enableChargingNotifications() async {
+    await _chargingMonitor.initialize();
+    await _chargingMonitor.startMonitoring();
+    notifyListeners();
+  }
+
+  /// Disable charging notifications
+  Future<void> disableChargingNotifications() async {
+    await _chargingMonitor.stopMonitoring();
+    notifyListeners();
+  }
+
+  /// Check if notifications are enabled
+  Future<bool> areNotificationsEnabled() async {
+    return await _chargingMonitor.isMonitoringEnabled();
+  }
+
+  /// Manually check charging state (useful for testing)
+  Future<void> checkChargingState() async {
+    await _chargingMonitor.checkChargingState();
   }
 
   /// Toggle sentry mode

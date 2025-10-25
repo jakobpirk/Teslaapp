@@ -13,6 +13,8 @@ import 'features/auth/presentation/screens/login_screen.dart';
 import 'screens/home_screen.dart';
 import 'utils/app_theme.dart';
 import 'web/web_shell.dart';
+import 'services/notification_service.dart';
+import 'services/charging_monitor_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -36,6 +38,17 @@ void main() async {
 
   // Initialize dependency injection
   await initializeDependencies();
+
+  // Initialize notification service (only on mobile)
+  if (!kIsWeb) {
+    try {
+      final notificationService = NotificationService();
+      await notificationService.initialize();
+      print('Notification service initialized successfully');
+    } catch (e) {
+      print('Failed to initialize notification service: $e');
+    }
+  }
 
   // Set preferred orientations (skip on web as it's not applicable)
   if (!kIsWeb) {
