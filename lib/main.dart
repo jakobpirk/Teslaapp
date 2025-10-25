@@ -13,8 +13,7 @@ import 'features/auth/presentation/screens/login_screen.dart';
 import 'screens/home_screen.dart';
 import 'utils/app_theme.dart';
 import 'web/web_shell.dart';
-import 'services/notification_service.dart';
-import 'services/charging_monitor_service.dart';
+import 'services/firebase_notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -39,14 +38,18 @@ void main() async {
   // Initialize dependency injection
   await initializeDependencies();
 
-  // Initialize notification service (only on mobile)
+  // Initialize Firebase notification service (only on mobile)
   if (!kIsWeb) {
     try {
-      final notificationService = NotificationService();
+      final notificationService = FirebaseNotificationService();
       await notificationService.initialize();
-      print('Notification service initialized successfully');
+      print('Firebase notification service initialized successfully');
+
+      // Log FCM token for debugging
+      final token = await notificationService.getFcmToken();
+      print('FCM Token: $token');
     } catch (e) {
-      print('Failed to initialize notification service: $e');
+      print('Failed to initialize Firebase notification service: $e');
     }
   }
 

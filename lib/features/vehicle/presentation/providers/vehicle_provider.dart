@@ -8,7 +8,8 @@ import '../../../../core/domain/usecases/climate_operations.dart';
 import '../../../../core/domain/usecases/charging_operations.dart';
 import '../../../../core/domain/usecases/security_operations.dart';
 import '../../../../core/domain/usecases/vehicle_access_operations.dart';
-import '../../../../services/charging_monitor_service.dart';
+import '../../../../services/firebase_notification_service.dart';
+import '../../../../services/charging_settings_service.dart';
 
 /// Provider for vehicle state and operations
 /// Uses use cases to interact with the domain layer
@@ -45,8 +46,9 @@ class VehicleProvider with ChangeNotifier {
   String? _error;
   DateTime? _lastRefresh;
 
-  // Charging monitor service
-  final ChargingMonitorService _chargingMonitor = ChargingMonitorService();
+  // Firebase services
+  final FirebaseNotificationService _notificationService = FirebaseNotificationService();
+  final ChargingSettingsService _chargingSettings = ChargingSettingsService();
 
   VehicleProvider({
     required this.getVehicleState,
@@ -188,15 +190,11 @@ class VehicleProvider with ChangeNotifier {
   /// Start charging
   Future<void> startCharge() async {
     await _executeCommand(() => startCharging.call());
-    // Check charging state after starting
-    await _chargingMonitor.checkChargingState();
   }
 
   /// Stop charging
   Future<void> stopCharge() async {
     await _executeCommand(() => stopCharging.call());
-    // Check charging state after stopping
-    await _chargingMonitor.checkChargingState();
   }
 
   /// Set charge limit
@@ -207,37 +205,62 @@ class VehicleProvider with ChangeNotifier {
   }
 
   /// Set max charge limit (for auto-stop)
-  Future<void> setMaxChargeLimit(int? limit) async {
-    await _chargingMonitor.setMaxChargeLimit(limit);
+  /// vehicleId should be the VIN or unique vehicle identifier
+  Future<void> setMaxChargeLimit(int? limit, {String? vehicleId}) async {
+    await _chargingSettings.setMaxChargeLimit(limit, vehicleId);
+
+    // Update current battery level if we have vehicle state
+    if (_vehicleState != null) {
+      await _chargingSettings.saveLastBatteryLevel(_vehicleState!.batteryLevel);
+    }
+
     notifyListeners();
   }
 
   /// Get max charge limit
   Future<int?> getMaxChargeLimit() async {
-    return await _chargingMonitor.getMaxChargeLimit();
+    return await _chargingSettings.getMaxChargeLimit();
   }
 
   /// Enable charging notifications
-  Future<void> enableChargingNotifications() async {
-    await _chargingMonitor.initialize();
-    await _chargingMonitor.startMonitoring();
+  /// vehicleId should be the VIN or unique vehicle identifier
+  Future<void> enableChargingNotifications({String? vehicleId}) async {
+    await _notificationService.initialize();
+
+    // Get FCM token
+    final fcmToken = await _notificationService.getFcmToken();
+
+    if (fcmToken != null && vehicleId != null) {
+      // Enable monitoring with Firebase Cloud Functions
+      await _chargingSettings.enableMonitoring(vehicleId, fcmToken);
+
+      // Subscribe to vehicle-specific notifications
+      await _notificationService.subscribeToVehicleUpdates(vehicleId);
+    }
+
+    await _notificationService.enableNotifications();
     notifyListeners();
   }
 
   /// Disable charging notifications
-  Future<void> disableChargingNotifications() async {
-    await _chargingMonitor.stopMonitoring();
+  Future<void> disableChargingNotifications({String? vehicleId}) async {
+    if (vehicleId != null) {
+      await _chargingSettings.disableMonitoring(vehicleId);
+      await _notificationService.unsubscribeFromVehicleUpdates(vehicleId);
+    }
+
+    await _notificationService.disableNotifications();
     notifyListeners();
   }
 
   /// Check if notifications are enabled
   Future<bool> areNotificationsEnabled() async {
-    return await _chargingMonitor.isMonitoringEnabled();
+    return await _notificationService.areNotificationsEnabled();
   }
 
-  /// Manually check charging state (useful for testing)
-  Future<void> checkChargingState() async {
-    await _chargingMonitor.checkChargingState();
+  /// Get FCM token (for debugging)
+  Future<String?> getFcmToken() async {
+    return await _notificationService.getFcmToken();
   }
 
   /// Toggle sentry mode

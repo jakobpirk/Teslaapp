@@ -1,0 +1,21 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Charging monitors - users can only access their own vehicle data
+    match /charging_monitors/{vehicleId} {
+      allow read, write: if request.auth != null && request.auth.uid != null;
+    }
+
+    // Charging sessions - read/write access for authenticated users
+    match /charging_sessions/{sessionId} {
+      allow read, write: if request.auth != null;
+    }
+
+    // Electricity pricing data - read-only for all authenticated users
+    match /electricity_pricing/{document=**} {
+      allow read: if request.auth != null;
+      allow write: if false; // Only admin/cloud functions can write
+    }
+  }
+}

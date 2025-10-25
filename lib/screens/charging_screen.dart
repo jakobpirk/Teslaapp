@@ -43,6 +43,13 @@ class _ChargingScreenState extends State<ChargingScreen> {
     });
   }
 
+  String? _getVehicleId() {
+    final vehicleProvider = context.read<VehicleProvider>();
+    // Use VIN or display name as vehicle ID
+    // TODO: Get actual VIN from vehicle state when available
+    return vehicleProvider.vehicleState?.displayName ?? 'default-vehicle';
+  }
+
   Future<void> _loadSmartChargingData() async {
     final smartChargingProvider = context.read<SmartChargingProvider>();
     final vehicleProvider = context.read<VehicleProvider>();
@@ -701,11 +708,15 @@ class _ChargingScreenState extends State<ChargingScreen> {
                   value: _maxChargeLimitEnabled,
                   onChanged: (value) async {
                     setState(() => _maxChargeLimitEnabled = value);
+                    final vehicleId = _getVehicleId();
                     if (value) {
-                      await provider.setMaxChargeLimit(_maxChargeLimit.toInt());
+                      await provider.setMaxChargeLimit(
+                        _maxChargeLimit.toInt(),
+                        vehicleId: vehicleId,
+                      );
                       _showSnackBar('Auto-stop enabled at ${_maxChargeLimit.toInt()}%');
                     } else {
-                      await provider.setMaxChargeLimit(null);
+                      await provider.setMaxChargeLimit(null, vehicleId: vehicleId);
                       _showSnackBar('Auto-stop disabled');
                     }
                   },
@@ -764,7 +775,11 @@ class _ChargingScreenState extends State<ChargingScreen> {
                     setState(() => _maxChargeLimit = value);
                   },
                   onChangeEnd: (value) async {
-                    await provider.setMaxChargeLimit(value.toInt());
+                    final vehicleId = _getVehicleId();
+                    await provider.setMaxChargeLimit(
+                      value.toInt(),
+                      vehicleId: vehicleId,
+                    );
                     _showSnackBar('Target level set to ${value.toInt()}%');
                   },
                 ),
@@ -828,11 +843,12 @@ class _ChargingScreenState extends State<ChargingScreen> {
                   value: _notificationsEnabled,
                   onChanged: (value) async {
                     setState(() => _notificationsEnabled = value);
+                    final vehicleId = _getVehicleId();
                     if (value) {
-                      await provider.enableChargingNotifications();
+                      await provider.enableChargingNotifications(vehicleId: vehicleId);
                       _showSnackBar('Notifications enabled');
                     } else {
-                      await provider.disableChargingNotifications();
+                      await provider.disableChargingNotifications(vehicleId: vehicleId);
                       _showSnackBar('Notifications disabled');
                     }
                   },
