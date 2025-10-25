@@ -331,7 +331,7 @@ class ProtectedRoutesAuthTest extends TestCase
         ]);
 
         $response = $this->patchJson("/api/v1/charging-recommendations/{$recommendation->id}/status", [
-            'status' => 'expired',
+            'status' => 'rejected',
         ]);
         $response->assertStatus(401);
     }

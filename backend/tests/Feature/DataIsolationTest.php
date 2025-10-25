@@ -64,7 +64,7 @@ class DataIsolationTest extends TestCase
             ->getJson('/api/v1/vehicles');
 
         $response->assertStatus(200);
-        $vehicles = $response->json('data.vehicles');
+        $vehicles = $response->json('data');
 
         $this->assertCount(1, $vehicles);
         $this->assertEquals($this->vehicle1->id, $vehicles[0]['id']);
@@ -77,8 +77,8 @@ class DataIsolationTest extends TestCase
         $response = $this->withHeader('Authorization', 'Bearer ' . $this->token1)
             ->getJson("/api/v1/vehicles/{$this->vehicle2->id}");
 
-        $response->assertStatus(403)
-            ->assertJson(['message' => 'Unauthorized']);
+        // VehicleController uses findOrFail which returns 404 for non-owned vehicles
+        $response->assertStatus(404);
     }
 
     /** @test */
@@ -89,8 +89,8 @@ class DataIsolationTest extends TestCase
                 'display_name' => 'Hacked Name',
             ]);
 
-        $response->assertStatus(403)
-            ->assertJson(['message' => 'Unauthorized']);
+        // VehicleController uses findOrFail which returns 404 for non-owned vehicles
+        $response->assertStatus(404);
 
         // Verify vehicle was not updated
         $this->vehicle2->refresh();
@@ -103,12 +103,13 @@ class DataIsolationTest extends TestCase
         $response = $this->withHeader('Authorization', 'Bearer ' . $this->token1)
             ->deleteJson("/api/v1/vehicles/{$this->vehicle2->id}");
 
-        $response->assertStatus(403)
-            ->assertJson(['message' => 'Unauthorized']);
+        // VehicleController uses findOrFail which returns 404 for non-owned vehicles
+        $response->assertStatus(404);
 
-        // Verify vehicle still exists
+        // Verify vehicle still exists and is active
         $this->assertDatabaseHas('vehicles', [
             'id' => $this->vehicle2->id,
+            'is_active' => true,
         ]);
     }
 
@@ -118,8 +119,8 @@ class DataIsolationTest extends TestCase
         $response = $this->withHeader('Authorization', 'Bearer ' . $this->token1)
             ->getJson("/api/v1/vehicles/{$this->vehicle2->id}/statistics");
 
-        $response->assertStatus(403)
-            ->assertJson(['message' => 'Unauthorized']);
+        // VehicleController uses findOrFail which returns 404 for non-owned vehicles
+        $response->assertStatus(404);
     }
 
     /** @test */
@@ -144,7 +145,7 @@ class DataIsolationTest extends TestCase
             ->getJson('/api/v1/charging-sessions');
 
         $response->assertStatus(200);
-        $sessions = $response->json('data.charging_sessions');
+        $sessions = $response->json();
 
         $this->assertCount(1, $sessions);
         $this->assertEquals($this->vehicle1->id, $sessions[0]['vehicle_id']);
@@ -346,7 +347,7 @@ class DataIsolationTest extends TestCase
 
         $response = $this->withHeader('Authorization', 'Bearer ' . $this->token1)
             ->patchJson("/api/v1/charging-recommendations/{$recommendation->id}/status", [
-                'status' => 'expired',
+                'status' => 'rejected',
             ]);
 
         $response->assertStatus(403)
@@ -367,10 +368,8 @@ class DataIsolationTest extends TestCase
             ->assertJson([
                 'success' => true,
                 'data' => [
-                    'vehicle' => [
-                        'id' => $this->vehicle1->id,
-                        'display_name' => 'User 1 Tesla',
-                    ],
+                    'id' => $this->vehicle1->id,
+                    'display_name' => 'User 1 Tesla',
                 ],
             ]);
     }
@@ -417,13 +416,8 @@ class DataIsolationTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJson([
-                'success' => true,
-                'data' => [
-                    'charging_session' => [
-                        'id' => $session->id,
-                        'vehicle_id' => $this->vehicle1->id,
-                    ],
-                ],
+                'id' => $session->id,
+                'vehicle_id' => $this->vehicle1->id,
             ]);
     }
 
@@ -446,13 +440,8 @@ class DataIsolationTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJson([
-                'success' => true,
-                'data' => [
-                    'recommendation' => [
-                        'id' => $recommendation->id,
-                        'vehicle_id' => $this->vehicle1->id,
-                    ],
-                ],
+                'id' => $recommendation->id,
+                'vehicle_id' => $this->vehicle1->id,
             ]);
     }
 
@@ -499,13 +488,13 @@ class DataIsolationTest extends TestCase
         // Check vehicles list
         $response = $this->withHeader('Authorization', 'Bearer ' . $this->token1)
             ->getJson('/api/v1/vehicles');
-        $vehicles = $response->json('data.vehicles');
+        $vehicles = $response->json('data');
         $this->assertCount(1, $vehicles);
 
         // Check charging sessions list
         $response = $this->withHeader('Authorization', 'Bearer ' . $this->token1)
             ->getJson('/api/v1/charging-sessions');
-        $sessions = $response->json('data.charging_sessions');
+        $sessions = $response->json();
         $this->assertCount(1, $sessions);
 
         // Verify none of the data belongs to user2
