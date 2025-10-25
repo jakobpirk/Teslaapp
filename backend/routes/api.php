@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\ChargingRecommendationController;
 use App\Http\Controllers\VehicleController;
 use App\Http\Controllers\ElectricityProviderController;
 use App\Http\Controllers\UserSettingsController;
+use App\Http\Controllers\AuraController;
 
 /*
 |--------------------------------------------------------------------------
@@ -115,5 +116,17 @@ Route::prefix('v1')->group(function () {
         Route::post('/settings/tessie-api-key', [UserSettingsController::class, 'updateTessieApiKey']);
         Route::delete('/settings/tessie-api-key', [UserSettingsController::class, 'removeTessieApiKey']);
         Route::post('/settings/electricity-provider', [UserSettingsController::class, 'updateElectricityProvider']);
+        Route::post('/settings/pricing-region', [UserSettingsController::class, 'updatePricingRegion']);
+        Route::delete('/settings/pricing-region', [UserSettingsController::class, 'removePricingRegion']);
+    });
+
+    // Aura Electricity Pricing Routes
+    Route::prefix('aura')->group(function () {
+        // Public endpoint for Firebase scheduled task
+        Route::post('/fetch-prices', [AuraController::class, 'fetchPrices']);
+
+        // Public endpoints for getting pricing data
+        Route::get('/pricing', [AuraController::class, 'getPricing']);
+        Route::get('/tomorrow/availability', [AuraController::class, 'checkTomorrowAvailability']);
     });
 });

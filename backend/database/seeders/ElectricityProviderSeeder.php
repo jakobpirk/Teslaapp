@@ -174,6 +174,33 @@ class ElectricityProviderSeeder extends Seeder
                     ],
                 ],
             ],
+            [
+                'name' => 'aura',
+                'display_name' => 'Aura',
+                'api_base_url' => 'https://dkr-cms-umbraco-app-p-aura.azurewebsites.net/umbraco/api/PowerPriceInfo/Get/data',
+                'description' => 'Danish electricity company with regional pricing (East/West Denmark) and dynamic hourly rates.',
+                'is_active' => true,
+                'pricing_structure' => [
+                    'rate_types' => ['off-peak', 'mid-peak', 'peak'],
+                    'time_windows' => [
+                        'off-peak' => ['23:00-06:00'],
+                        'mid-peak' => ['06:00-17:00', '21:00-23:00'],
+                        'peak' => ['17:00-21:00'],
+                    ],
+                    'base_rates' => [
+                        'off-peak' => 0.10,
+                        'mid-peak' => 0.16,
+                        'peak' => 0.67,
+                    ],
+                    'regions' => ['east', 'west'],
+                    'currency' => 'DKK',
+                    'features' => [
+                        'hourly_pricing' => true,
+                        'regional_pricing' => true,
+                        'real_time_api' => true,
+                    ],
+                ],
+            ],
         ];
 
         foreach ($providers as $provider) {

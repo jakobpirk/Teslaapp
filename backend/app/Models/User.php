@@ -24,6 +24,7 @@ class User extends Authenticatable
         'password',
         'tessie_api_key',
         'electricity_provider_id',
+        'pricing_region',
     ];
 
     /**
@@ -85,5 +86,21 @@ class User extends Authenticatable
     public function hasElectricityProvider(): bool
     {
         return !empty($this->electricity_provider_id);
+    }
+
+    /**
+     * Check if user has set a pricing region.
+     */
+    public function hasPricingRegion(): bool
+    {
+        return !empty($this->pricing_region);
+    }
+
+    /**
+     * Get the pricing region (e.g., 'east' or 'west' for Aura).
+     */
+    public function getPricingRegion(): ?string
+    {
+        return $this->pricing_region;
     }
 }

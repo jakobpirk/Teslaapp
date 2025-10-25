@@ -6,6 +6,7 @@ use App\Models\ChargingFactor;
 use App\Models\ChargingFactorValue;
 use App\Models\ChargingRecommendation;
 use App\Models\PricingHistory;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
 
@@ -18,13 +19,14 @@ class SmartChargingService
      * Generate a charging recommendation for a vehicle
      *
      * @param string $vehicleId
-     * @param array $options Optional parameters (required_by, energy_needed)
+     * @param array $options Optional parameters (required_by, energy_needed, user)
      * @return ChargingRecommendation
      */
     public function generateRecommendation(string $vehicleId, array $options = []): ChargingRecommendation
     {
         $requiredBy = isset($options['required_by']) ? Carbon::parse($options['required_by']) : Carbon::now()->addHours(self::LOOK_AHEAD_HOURS);
         $energyNeeded = $options['energy_needed'] ?? 50; // kWh
+        $user = $options['user'] ?? null; // User model instance for pricing region
 
         // Get enabled factors
         $enabledFactors = ChargingFactor::getEnabled();
@@ -35,7 +37,8 @@ class SmartChargingService
             $now,
             $requiredBy,
             $energyNeeded,
-            $enabledFactors
+            $enabledFactors,
+            $user
         );
 
         // Find the optimal window
@@ -83,7 +86,8 @@ class SmartChargingService
         Carbon $startTime,
         Carbon $endTime,
         float $energyNeeded,
-        $enabledFactors
+        $enabledFactors,
+        ?User $user = null
     ): array {
         $windows = [];
         $current = $startTime->copy();
@@ -97,7 +101,8 @@ class SmartChargingService
                 $windowStart,
                 $windowEnd,
                 $energyNeeded,
-                $enabledFactors
+                $enabledFactors,
+                $user
             );
 
             $windows[] = [
@@ -119,7 +124,8 @@ class SmartChargingService
         Carbon $startTime,
         Carbon $endTime,
         float $energyNeeded,
-        $enabledFactors
+        $enabledFactors,
+        ?User $user = null
     ): array {
         $factorScores = [];
         $totalScore = 0;
@@ -131,7 +137,8 @@ class SmartChargingService
                 $factor,
                 $startTime,
                 $endTime,
-                $energyNeeded
+                $energyNeeded,
+                $user
             );
 
             $weightedScore = $factorScore['normalized_score'] * $factor->weight;
@@ -168,15 +175,30 @@ class SmartChargingService
         ChargingFactor $factor,
         Carbon $startTime,
         Carbon $endTime,
-        float $energyNeeded
+        float $energyNeeded,
+        ?User $user = null
     ): array {
         // For now, only price factor is implemented
         if ($factor->name === 'price') {
-            $avgPrice = PricingHistory::whereBetween('timestamp', [$startTime, $endTime])
-                ->avg('price_per_kwh') ?? 0.15;
+            $query = PricingHistory::whereBetween('timestamp', [$startTime, $endTime]);
+
+            // If user has a pricing region set, filter by region
+            if ($user && $user->hasPricingRegion()) {
+                $query->where('region', $user->getPricingRegion());
+            }
+
+            // If user has an electricity provider, filter by provider
+            if ($user && $user->hasElectricityProvider()) {
+                $provider = $user->electricityProvider;
+                if ($provider) {
+                    $query->where('utility_provider', $provider->display_name);
+                }
+            }
+
+            $avgPrice = $query->avg('price_per_kwh') ?? 0.15;
 
             // Normalize: lower prices get higher scores (0-100)
-            // Assume price range $0.05 - $0.50 per kWh
+            // Assume price range $0.05 - $0.50 per kWh (DKK in Denmark)
             $minPrice = 0.05;
             $maxPrice = 0.50;
             $normalizedScore = 100 * (1 - (($avgPrice - $minPrice) / ($maxPrice - $minPrice)));

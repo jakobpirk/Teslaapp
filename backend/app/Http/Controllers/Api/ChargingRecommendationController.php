@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\ChargingRecommendation;
+use App\Models\Vehicle;
 use App\Services\SmartChargingService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -27,9 +28,21 @@ class ChargingRecommendationController extends Controller
             'energy_needed' => 'nullable|numeric|min:0',
         ]);
 
+        // Load vehicle with user and electricity provider for regional pricing
+        $vehicle = Vehicle::with('user.electricityProvider')->find($vehicleId);
+
+        if (!$vehicle) {
+            return response()->json(['message' => 'Vehicle not found'], 404);
+        }
+
+        // Pass user to the service for regional pricing support
+        $options = array_merge($validated, [
+            'user' => $vehicle->user,
+        ]);
+
         $recommendation = $this->smartChargingService->generateRecommendation(
             $vehicleId,
-            $validated
+            $options
         );
 
         return response()->json($recommendation, 201);

@@ -22,6 +22,7 @@ class UserSettingsController extends Controller
             'data' => [
                 'has_tessie_api_key' => $user->hasTessieApiKey(),
                 'electricity_provider' => $user->electricityProvider,
+                'pricing_region' => $user->getPricingRegion(),
             ],
         ]);
     }
@@ -111,6 +112,53 @@ class UserSettingsController extends Controller
     }
 
     /**
+     * Update pricing region.
+     */
+    public function updatePricingRegion(Request $request): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'pricing_region' => 'required|string|in:east,west',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $user = $request->user();
+        $user->update([
+            'pricing_region' => $request->pricing_region,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Pricing region updated successfully',
+            'data' => [
+                'pricing_region' => $user->pricing_region,
+            ],
+        ]);
+    }
+
+    /**
+     * Remove pricing region.
+     */
+    public function removePricingRegion(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $user->update([
+            'pricing_region' => null,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Pricing region removed successfully',
+        ]);
+    }
+
+    /**
      * Get complete user profile with settings.
      */
     public function profile(Request $request): JsonResponse
@@ -126,6 +174,7 @@ class UserSettingsController extends Controller
                 'email' => $user->email,
                 'has_tessie_api_key' => $user->hasTessieApiKey(),
                 'electricity_provider' => $user->electricityProvider,
+                'pricing_region' => $user->getPricingRegion(),
                 'vehicles_count' => $user->vehicles->count(),
                 'active_vehicles_count' => $user->activeVehicles->count(),
             ],
