@@ -19,7 +19,6 @@ class ChargingSession extends Model
         'end_time',
         'energy_added',
         'cost',
-        'location',
         'charge_rate',
         'start_battery_level',
         'end_battery_level',

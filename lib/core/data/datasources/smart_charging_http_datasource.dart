@@ -16,7 +16,6 @@ class SmartChargingHttpDataSource {
   Future<PricingHistoryListResponseDto> getPricingHistory({
     required DateTime startTime,
     required DateTime endTime,
-    String location = 'default',
   }) async {
     try {
       final response = await dio.get(
@@ -24,7 +23,6 @@ class SmartChargingHttpDataSource {
         queryParameters: {
           'start_time': startTime.toIso8601String(),
           'end_time': endTime.toIso8601String(),
-          'location': location,
         },
       );
 
@@ -41,15 +39,10 @@ class SmartChargingHttpDataSource {
   }
 
   /// Get pricing for today and tomorrow
-  Future<PricingHistoryListResponseDto> getTodayTomorrowPricing({
-    String location = 'default',
-  }) async {
+  Future<PricingHistoryListResponseDto> getTodayTomorrowPricing() async {
     try {
       final response = await dio.get(
         '$baseUrl/pricing/today-tomorrow',
-        queryParameters: {
-          'location': location,
-        },
       );
 
       if (response.statusCode == 200) {
@@ -65,15 +58,10 @@ class SmartChargingHttpDataSource {
   }
 
   /// Get current pricing
-  Future<PricingHistoryDto> getCurrentPricing({
-    String location = 'default',
-  }) async {
+  Future<PricingHistoryDto> getCurrentPricing() async {
     try {
       final response = await dio.get(
         '$baseUrl/pricing/current',
-        queryParameters: {
-          'location': location,
-        },
       );
 
       if (response.statusCode == 200) {
@@ -93,14 +81,11 @@ class SmartChargingHttpDataSource {
   /// Generate a new charging recommendation
   Future<ChargingRecommendationDto> generateRecommendation({
     required String vehicleId,
-    String location = 'default',
     DateTime? requiredBy,
     double? energyNeeded,
   }) async {
     try {
-      final data = <String, dynamic>{
-        'location': location,
-      };
+      final data = <String, dynamic>{};
 
       if (requiredBy != null) {
         data['required_by'] = requiredBy.toIso8601String();

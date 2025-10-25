@@ -10,7 +10,6 @@ class ChargingSessionDto {
   final double? peakChargingRate;
   final List<ChargingDataPointDto> dataPoints;
   final PricingDataDto? pricing;
-  final String location;
   final bool isComplete;
 
   ChargingSessionDto({
@@ -23,7 +22,6 @@ class ChargingSessionDto {
     this.peakChargingRate,
     required this.dataPoints,
     this.pricing,
-    required this.location,
     required this.isComplete,
   });
 
@@ -43,7 +41,6 @@ class ChargingSessionDto {
       pricing: data['pricing'] != null
           ? PricingDataDto.fromMap(data['pricing'] as Map<String, dynamic>)
           : null,
-      location: data['location'] as String? ?? 'Unknown',
       isComplete: data['isComplete'] as bool? ?? false,
     );
   }
@@ -58,7 +55,6 @@ class ChargingSessionDto {
       'peakChargingRate': peakChargingRate,
       'dataPoints': dataPoints.map((e) => e.toMap()).toList(),
       'pricing': pricing?.toMap(),
-      'location': location,
       'isComplete': isComplete,
     };
   }

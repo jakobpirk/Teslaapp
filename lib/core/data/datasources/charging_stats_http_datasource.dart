@@ -163,7 +163,6 @@ class ChargingStatsHttpDataSource {
               hourlyPrices: [],
             )
           : null,
-      location: json['location'] as String? ?? 'Unknown',
       isComplete: json['end_time'] != null,
     );
   }
@@ -178,7 +177,6 @@ class ChargingStatsHttpDataSource {
       'energy_added': session.energyAdded,
       'charge_rate': session.peakChargingRate,
       'cost': session.pricing?.totalCost ?? 0.0,
-      'location': session.location,
     };
 
     if (vehicleId != null) {

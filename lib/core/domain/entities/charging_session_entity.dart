@@ -8,7 +8,6 @@ class ChargingSessionEntity {
   final double? peakChargingRate; // kW
   final List<ChargingDataPointEntity> dataPoints;
   final PricingDataEntity? pricing;
-  final String location;
   final bool isComplete;
 
   ChargingSessionEntity({
@@ -21,7 +20,6 @@ class ChargingSessionEntity {
     this.peakChargingRate,
     required this.dataPoints,
     this.pricing,
-    required this.location,
     required this.isComplete,
   });
 
@@ -51,7 +49,6 @@ class ChargingSessionEntity {
     double? peakChargingRate,
     List<ChargingDataPointEntity>? dataPoints,
     PricingDataEntity? pricing,
-    String? location,
     bool? isComplete,
   }) {
     return ChargingSessionEntity(
@@ -64,7 +61,6 @@ class ChargingSessionEntity {
       peakChargingRate: peakChargingRate ?? this.peakChargingRate,
       dataPoints: dataPoints ?? this.dataPoints,
       pricing: pricing ?? this.pricing,
-      location: location ?? this.location,
       isComplete: isComplete ?? this.isComplete,
     );
   }

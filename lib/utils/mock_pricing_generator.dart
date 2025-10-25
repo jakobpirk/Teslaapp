@@ -150,7 +150,6 @@ class MockPricingGenerator {
           .reduce((a, b) => a > b ? a : b),
       dataPoints: dataPoints,
       pricing: pricing,
-      location: _randomLocation(),
       isComplete: true,
     );
   }

@@ -18,7 +18,6 @@ return new class extends Migration
             $table->timestamp('end_time')->nullable();
             $table->decimal('energy_added', 10, 2);
             $table->decimal('cost', 10, 2);
-            $table->string('location')->nullable();
             $table->decimal('charge_rate', 10, 2)->nullable();
             $table->integer('start_battery_level')->nullable();
             $table->integer('end_battery_level')->nullable();

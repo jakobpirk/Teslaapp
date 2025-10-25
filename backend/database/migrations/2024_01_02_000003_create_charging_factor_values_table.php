@@ -15,7 +15,6 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->foreignUuid('charging_factor_id')->constrained()->onDelete('cascade');
             $table->timestamp('timestamp')->index();
-            $table->string('location')->nullable()->index();
             $table->decimal('value', 10, 4)->nullable(); // Numeric value
             $table->text('value_text')->nullable(); // Text/categorical value
             $table->boolean('value_boolean')->nullable(); // Boolean value
@@ -23,7 +22,6 @@ return new class extends Migration
             $table->timestamps();
 
             $table->index(['charging_factor_id', 'timestamp']);
-            $table->index(['charging_factor_id', 'timestamp', 'location']);
         });
     }
 
