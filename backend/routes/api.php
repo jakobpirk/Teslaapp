@@ -43,8 +43,8 @@ Route::prefix('v1')->group(function () {
         Route::get('/auth/me', [AuthController::class, 'me']);
     });
 
-    // Charging Sessions Routes
-    Route::prefix('charging-sessions')->group(function () {
+    // Charging Sessions Routes (Protected)
+    Route::middleware('auth:sanctum')->prefix('charging-sessions')->group(function () {
         Route::get('/', [ChargingSessionController::class, 'index']);
         Route::post('/', [ChargingSessionController::class, 'store']);
         Route::get('/{id}', [ChargingSessionController::class, 'show']);
@@ -73,8 +73,8 @@ Route::prefix('v1')->group(function () {
         Route::get('/average', [PricingHistoryController::class, 'average']);
     });
 
-    // Charging Recommendation Routes
-    Route::prefix('charging-recommendations')->group(function () {
+    // Charging Recommendation Routes (Protected)
+    Route::middleware('auth:sanctum')->prefix('charging-recommendations')->group(function () {
         Route::post('/vehicle/{vehicleId}/generate', [ChargingRecommendationController::class, 'generate']);
         Route::get('/vehicle/{vehicleId}/latest', [ChargingRecommendationController::class, 'latest']);
         Route::get('/vehicle/{vehicleId}', [ChargingRecommendationController::class, 'index']);

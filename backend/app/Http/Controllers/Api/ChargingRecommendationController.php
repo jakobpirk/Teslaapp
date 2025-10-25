@@ -35,6 +35,11 @@ class ChargingRecommendationController extends Controller
             return response()->json(['message' => 'Vehicle not found'], 404);
         }
 
+        // Verify vehicle ownership
+        if ($vehicle->user_id !== $request->user()->id) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
         // Pass user to the service for regional pricing support
         $options = array_merge($validated, [
             'user' => $vehicle->user,
@@ -51,8 +56,14 @@ class ChargingRecommendationController extends Controller
     /**
      * Get the latest recommendation for a vehicle
      */
-    public function latest(string $vehicleId): JsonResponse
+    public function latest(Request $request, string $vehicleId): JsonResponse
     {
+        // Verify vehicle ownership
+        $vehicle = Vehicle::find($vehicleId);
+        if (!$vehicle || $vehicle->user_id !== $request->user()->id) {
+            return response()->json(['message' => 'Vehicle not found or unauthorized'], 403);
+        }
+
         $recommendation = ChargingRecommendation::getLatestForVehicle($vehicleId);
 
         if (!$recommendation) {
@@ -71,8 +82,14 @@ class ChargingRecommendationController extends Controller
     /**
      * Get all recommendations for a vehicle
      */
-    public function index(string $vehicleId): JsonResponse
+    public function index(Request $request, string $vehicleId): JsonResponse
     {
+        // Verify vehicle ownership
+        $vehicle = Vehicle::find($vehicleId);
+        if (!$vehicle || $vehicle->user_id !== $request->user()->id) {
+            return response()->json(['message' => 'Vehicle not found or unauthorized'], 403);
+        }
+
         $recommendations = ChargingRecommendation::where('vehicle_id', $vehicleId)
             ->orderBy('created_at', 'desc')
             ->get();
@@ -83,12 +100,17 @@ class ChargingRecommendationController extends Controller
     /**
      * Get a specific recommendation
      */
-    public function show(string $id): JsonResponse
+    public function show(Request $request, string $id): JsonResponse
     {
-        $recommendation = ChargingRecommendation::find($id);
+        $recommendation = ChargingRecommendation::with('vehicle')->find($id);
 
         if (!$recommendation) {
             return response()->json(['message' => 'Recommendation not found'], 404);
+        }
+
+        // Verify ownership through vehicle
+        if ($recommendation->vehicle->user_id !== $request->user()->id) {
+            return response()->json(['message' => 'Unauthorized'], 403);
         }
 
         return response()->json($recommendation);
@@ -97,12 +119,17 @@ class ChargingRecommendationController extends Controller
     /**
      * Mark a recommendation as executed
      */
-    public function markExecuted(string $id): JsonResponse
+    public function markExecuted(Request $request, string $id): JsonResponse
     {
-        $recommendation = ChargingRecommendation::find($id);
+        $recommendation = ChargingRecommendation::with('vehicle')->find($id);
 
         if (!$recommendation) {
             return response()->json(['message' => 'Recommendation not found'], 404);
+        }
+
+        // Verify ownership through vehicle
+        if ($recommendation->vehicle->user_id !== $request->user()->id) {
+            return response()->json(['message' => 'Unauthorized'], 403);
         }
 
         $recommendation->markAsExecuted();
@@ -119,10 +146,15 @@ class ChargingRecommendationController extends Controller
             'status' => 'required|in:pending,accepted,rejected,executed',
         ]);
 
-        $recommendation = ChargingRecommendation::find($id);
+        $recommendation = ChargingRecommendation::with('vehicle')->find($id);
 
         if (!$recommendation) {
             return response()->json(['message' => 'Recommendation not found'], 404);
+        }
+
+        // Verify ownership through vehicle
+        if ($recommendation->vehicle->user_id !== $request->user()->id) {
+            return response()->json(['message' => 'Unauthorized'], 403);
         }
 
         $recommendation->update(['status' => $validated['status']]);

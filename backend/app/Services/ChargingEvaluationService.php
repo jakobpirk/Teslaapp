@@ -9,6 +9,9 @@ use Illuminate\Support\Facades\Log;
 
 class ChargingEvaluationService
 {
+    private const DEFAULT_TARGET_BATTERY_LEVEL = 80; // Default target battery level in percent
+    private const DEFAULT_BATTERY_CAPACITY_KWH = 75.0; // Default battery capacity in kWh
+
     protected TessieService $tessieService;
     protected SmartChargingService $smartChargingService;
 
@@ -178,9 +181,21 @@ class ChargingEvaluationService
                 $vehicle->id,
                 [
                     'user' => $user,
+                    'battery_level' => $batteryLevel,
                     'energy_needed' => $this->calculateEnergyNeeded($vehicle, $batteryLevel),
                 ]
             );
+
+            if (!$recommendation) {
+                Log::error('Failed to generate charging recommendation', [
+                    'vehicle_id' => $vehicle->id,
+                ]);
+                return [
+                    'success' => false,
+                    'action_taken' => false,
+                    'message' => 'Failed to generate charging recommendation',
+                ];
+            }
 
             $shouldChargeNow = $recommendation->should_charge_now;
 
@@ -278,8 +293,17 @@ class ChargingEvaluationService
      */
     protected function calculateEnergyNeeded(Vehicle $vehicle, int $currentBatteryLevel): float
     {
-        $targetLevel = 80; // Default target battery level
-        $batteryCapacity = $vehicle->battery_capacity ?? 75; // kWh
+        $targetLevel = self::DEFAULT_TARGET_BATTERY_LEVEL;
+        $batteryCapacity = $vehicle->battery_capacity ?? self::DEFAULT_BATTERY_CAPACITY_KWH;
+
+        // Validate inputs
+        if ($currentBatteryLevel < 0 || $currentBatteryLevel > 100) {
+            Log::warning('Invalid battery level', [
+                'vehicle_id' => $vehicle->id,
+                'battery_level' => $currentBatteryLevel,
+            ]);
+            $currentBatteryLevel = max(0, min(100, $currentBatteryLevel));
+        }
 
         $percentageNeeded = max(0, $targetLevel - $currentBatteryLevel);
         $energyNeeded = ($percentageNeeded / 100) * $batteryCapacity;

@@ -161,7 +161,7 @@ class AuthController extends Controller
         // Generate a simple 6-digit code for mobile app
         $resetCode = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
 
-        // Store the reset code (in production, this should be hashed)
+        // Store the hashed reset code
         \DB::table('password_reset_tokens')->updateOrInsert(
             ['email' => $user->email],
             [
@@ -170,15 +170,12 @@ class AuthController extends Controller
             ]
         );
 
-        // In a real app, send this via email
-        // For development, we'll return it in the response
-        // TODO: Implement email sending in production
+        // TODO: Implement email sending
+        // In production, send the code via email instead of returning it
 
         return response()->json([
             'success' => true,
-            'message' => 'Password reset code sent to your email',
-            // Remove this in production
-            'reset_code' => $resetCode,
+            'message' => 'If the email exists, a password reset code has been sent',
         ]);
     }
 
