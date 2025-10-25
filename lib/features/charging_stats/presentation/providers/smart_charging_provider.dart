@@ -45,15 +45,13 @@ class SmartChargingProvider with ChangeNotifier {
       _currentRecommendation?.confidenceScore ?? 0;
 
   /// Load pricing for today and tomorrow
-  Future<void> loadTodayTomorrowPricing({String location = 'default'}) async {
+  Future<void> loadTodayTomorrowPricing() async {
     _isLoading = true;
     _error = null;
     notifyListeners();
 
     try {
-      final response = await _dataSource.getTodayTomorrowPricing(
-        location: location,
-      );
+      final response = await _dataSource.getTodayTomorrowPricing();
 
       _pricingHistory = response.data;
       _lastPricingUpdate = DateTime.now();
@@ -68,11 +66,9 @@ class SmartChargingProvider with ChangeNotifier {
   }
 
   /// Get current electricity price
-  Future<PricingHistoryDto?> getCurrentPrice({
-    String location = 'default',
-  }) async {
+  Future<PricingHistoryDto?> getCurrentPrice() async {
     try {
-      return await _dataSource.getCurrentPricing(location: location);
+      return await _dataSource.getCurrentPricing();
     } catch (e) {
       _error = 'Failed to get current price: $e';
       notifyListeners();
@@ -83,7 +79,6 @@ class SmartChargingProvider with ChangeNotifier {
   /// Generate a new charging recommendation
   Future<void> generateRecommendation({
     required String vehicleId,
-    String location = 'default',
     DateTime? requiredBy,
     double? energyNeeded,
   }) async {
@@ -94,7 +89,6 @@ class SmartChargingProvider with ChangeNotifier {
     try {
       final recommendation = await _dataSource.generateRecommendation(
         vehicleId: vehicleId,
-        location: location,
         requiredBy: requiredBy,
         energyNeeded: energyNeeded,
       );
@@ -252,15 +246,13 @@ class SmartChargingProvider with ChangeNotifier {
   /// Refresh all data (pricing and recommendation)
   Future<void> refreshAll({
     required String vehicleId,
-    String location = 'default',
     DateTime? requiredBy,
     double? energyNeeded,
   }) async {
     await Future.wait([
-      loadTodayTomorrowPricing(location: location),
+      loadTodayTomorrowPricing(),
       generateRecommendation(
         vehicleId: vehicleId,
-        location: location,
         requiredBy: requiredBy,
         energyNeeded: energyNeeded,
       ),

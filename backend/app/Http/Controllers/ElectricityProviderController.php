@@ -48,10 +48,9 @@ class ElectricityProviderController extends Controller
     public function getCurrentPricing(Request $request, string $id): JsonResponse
     {
         $provider = ElectricityProvider::findOrFail($id);
-        $location = $request->query('location');
 
         try {
-            $pricing = $this->providerService->fetchCurrentPricing($provider, $location);
+            $pricing = $this->providerService->fetchCurrentPricing($provider);
 
             return response()->json([
                 'success' => true,
@@ -73,10 +72,9 @@ class ElectricityProviderController extends Controller
     {
         $provider = ElectricityProvider::findOrFail($id);
         $hours = $request->query('hours', 48);
-        $location = $request->query('location');
 
         try {
-            $forecast = $this->providerService->fetchPricingForecast($provider, (int) $hours, $location);
+            $forecast = $this->providerService->fetchPricingForecast($provider, (int) $hours);
 
             return response()->json([
                 'success' => true,
@@ -97,10 +95,9 @@ class ElectricityProviderController extends Controller
     public function updatePricing(Request $request, string $id): JsonResponse
     {
         $provider = ElectricityProvider::findOrFail($id);
-        $location = $request->input('location');
 
         try {
-            $pricingHistory = $this->providerService->updateCurrentPricing($provider, $location);
+            $pricingHistory = $this->providerService->updateCurrentPricing($provider);
 
             return response()->json([
                 'success' => true,
@@ -123,10 +120,9 @@ class ElectricityProviderController extends Controller
     {
         $provider = ElectricityProvider::findOrFail($id);
         $hours = $request->input('hours', 48);
-        $location = $request->input('location');
 
         try {
-            $stored = $this->providerService->updatePricingForecast($provider, $hours, $location);
+            $stored = $this->providerService->updatePricingForecast($provider, $hours);
 
             return response()->json([
                 'success' => true,

@@ -50,11 +50,9 @@ class ElectricityProviderHttpDataSource {
 
   /// Get current pricing for a provider
   Future<Map<String, dynamic>> getCurrentPricing(
-    String providerId, {
-    String? location,
+    String providerId,
   }) async {
-    final uri = Uri.parse('$baseUrl/electricity-providers/$providerId/pricing/current')
-        .replace(queryParameters: location != null ? {'location': location} : null);
+    final uri = Uri.parse('$baseUrl/electricity-providers/$providerId/pricing/current');
 
     final response = await client.get(
       uri,
@@ -75,14 +73,10 @@ class ElectricityProviderHttpDataSource {
   Future<List<Map<String, dynamic>>> getPricingForecast(
     String providerId, {
     int hours = 48,
-    String? location,
   }) async {
     final queryParams = <String, String>{
       'hours': hours.toString(),
     };
-    if (location != null) {
-      queryParams['location'] = location;
-    }
 
     final uri = Uri.parse('$baseUrl/electricity-providers/$providerId/pricing/forecast')
         .replace(queryParameters: queryParams);
@@ -105,8 +99,7 @@ class ElectricityProviderHttpDataSource {
   /// Update pricing data (requires authentication)
   Future<void> updatePricing(
     String token,
-    String providerId, {
-    String? location,
+    String providerId,
   }) async {
     final response = await client.post(
       Uri.parse('$baseUrl/electricity-providers/$providerId/pricing/update'),
@@ -114,7 +107,7 @@ class ElectricityProviderHttpDataSource {
         'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',
       },
-      body: json.encode({'location': location}),
+      body: json.encode({}),
     );
 
     if (response.statusCode != 200) {

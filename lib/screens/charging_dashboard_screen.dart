@@ -265,7 +265,7 @@ class _ChargingDashboardScreenState extends State<ChargingDashboardScreen> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        session.location,
+                        DateFormat('h:mm a').format(session.startTime),
                         style: TextStyle(
                           color: AppTheme.textSecondary,
                           fontSize: 11,
@@ -337,7 +337,6 @@ class _ChargingDashboardScreenState extends State<ChargingDashboardScreen> {
             ],
           ),
           const SizedBox(height: 16),
-          _buildDetailRow('Location', session.location, Icons.location_on),
           _buildDetailRow('Start Time', dateFormat.format(session.startTime),
               Icons.access_time),
           if (session.endTime != null)
