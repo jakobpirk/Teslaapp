@@ -1,0 +1,155 @@
+name: Deploy to Shared Hosting
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy-frontend:
+    name: Build and Deploy Frontend
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0'
+          channel: 'stable'
+
+      - name: Install Flutter dependencies
+        run: flutter pub get
+
+      - name: Build Flutter Web
+        run: flutter build web --release --web-renderer canvaskit
+
+      - name: Deploy Frontend to Shared Hosting
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./build/web/
+          server-dir: ${{ secrets.FTP_FRONTEND_DIR }}
+          dangerous-clean-slate: false
+          exclude: |
+            **/.git*
+            **/.git*/**
+
+  build-and-deploy-backend:
+    name: Build and Deploy Backend
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, xml, ctype, iconv, intl, pdo_mysql, dom, filter, gd, json, zip
+          coverage: none
+
+      - name: Install Composer dependencies
+        working-directory: ./backend
+        run: composer install --no-dev --optimize-autoloader --no-interaction
+
+      - name: Create .env for production
+        working-directory: ./backend
+        run: |
+          cp .env.example .env
+          echo "APP_ENV=production" >> .env
+          echo "APP_DEBUG=false" >> .env
+          echo "APP_KEY=${{ secrets.LARAVEL_APP_KEY }}" >> .env
+          echo "DB_CONNECTION=mysql" >> .env
+          echo "DB_HOST=${{ secrets.DB_HOST }}" >> .env
+          echo "DB_PORT=${{ secrets.DB_PORT }}" >> .env
+          echo "DB_DATABASE=${{ secrets.DB_DATABASE }}" >> .env
+          echo "DB_USERNAME=${{ secrets.DB_USERNAME }}" >> .env
+          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
+
+      - name: Optimize Laravel
+        working-directory: ./backend
+        run: |
+          php artisan config:cache
+          php artisan route:cache
+          php artisan view:cache
+
+      - name: Deploy Backend to Shared Hosting
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./backend/
+          server-dir: ${{ secrets.FTP_BACKEND_DIR }}
+          dangerous-clean-slate: false
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
+            **/tests/**
+            **/.env.example
+            **/storage/logs/**
+            **/docker-compose.yml
+            **/Dockerfile
+
+  run-migrations:
+    name: Run Database Migrations
+    runs-on: ubuntu-latest
+    needs: build-and-deploy-backend
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, xml, ctype, iconv, intl, pdo_mysql
+
+      - name: Install Composer dependencies
+        working-directory: ./backend
+        run: composer install --no-dev --optimize-autoloader --no-interaction
+
+      - name: Create .env for migrations
+        working-directory: ./backend
+        run: |
+          cp .env.example .env
+          echo "APP_KEY=${{ secrets.LARAVEL_APP_KEY }}" >> .env
+          echo "DB_CONNECTION=mysql" >> .env
+          echo "DB_HOST=${{ secrets.DB_HOST }}" >> .env
+          echo "DB_PORT=${{ secrets.DB_PORT }}" >> .env
+          echo "DB_DATABASE=${{ secrets.DB_DATABASE }}" >> .env
+          echo "DB_USERNAME=${{ secrets.DB_USERNAME }}" >> .env
+          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
+
+      - name: Run migrations
+        working-directory: ./backend
+        run: php artisan migrate --force
+
+  notify-deployment:
+    name: Notify Deployment Status
+    runs-on: ubuntu-latest
+    needs: [build-and-deploy-frontend, build-and-deploy-backend, run-migrations]
+    if: always()
+
+    steps:
+      - name: Check deployment status
+        run: |
+          if [ "${{ needs.build-and-deploy-frontend.result }}" == "success" ] && \
+             [ "${{ needs.build-and-deploy-backend.result }}" == "success" ] && \
+             [ "${{ needs.run-migrations.result }}" == "success" ]; then
+            echo "✅ Deployment successful!"
+            echo "Frontend and Backend deployed to shared hosting"
+          else
+            echo "❌ Deployment failed!"
+            exit 1
+          fi
