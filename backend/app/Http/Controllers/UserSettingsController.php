@@ -23,6 +23,10 @@ class UserSettingsController extends Controller
                 'has_tessie_api_key' => $user->hasTessieApiKey(),
                 'electricity_provider' => $user->electricityProvider,
                 'pricing_region' => $user->getPricingRegion(),
+                'auto_charging_enabled' => $user->isAutoChargingEnabled(),
+                'low_battery_protection_enabled' => $user->isLowBatteryProtectionEnabled(),
+                'low_battery_threshold' => $user->getLowBatteryThreshold(),
+                'low_battery_stop_limit' => $user->getLowBatteryStopLimit(),
             ],
         ]);
     }
@@ -175,8 +179,98 @@ class UserSettingsController extends Controller
                 'has_tessie_api_key' => $user->hasTessieApiKey(),
                 'electricity_provider' => $user->electricityProvider,
                 'pricing_region' => $user->getPricingRegion(),
+                'auto_charging_enabled' => $user->isAutoChargingEnabled(),
+                'low_battery_protection_enabled' => $user->isLowBatteryProtectionEnabled(),
+                'low_battery_threshold' => $user->getLowBatteryThreshold(),
+                'low_battery_stop_limit' => $user->getLowBatteryStopLimit(),
                 'vehicles_count' => $user->vehicles->count(),
                 'active_vehicles_count' => $user->activeVehicles->count(),
+            ],
+        ]);
+    }
+
+    /**
+     * Update automatic charging setting.
+     */
+    public function updateAutoCharging(Request $request): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'enabled' => 'required|boolean',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $user = $request->user();
+        $user->update([
+            'auto_charging_enabled' => $request->enabled,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Automatic charging ' . ($request->enabled ? 'enabled' : 'disabled'),
+            'data' => [
+                'auto_charging_enabled' => $user->auto_charging_enabled,
+            ],
+        ]);
+    }
+
+    /**
+     * Update low battery protection settings.
+     */
+    public function updateLowBatteryProtection(Request $request): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'enabled' => 'required|boolean',
+            'threshold' => 'nullable|integer|min:5|max:95',
+            'stop_limit' => 'nullable|integer|min:10|max:100',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        // Validate that stop_limit is greater than threshold
+        if ($request->has('threshold') && $request->has('stop_limit')) {
+            if ($request->stop_limit <= $request->threshold) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Stop limit must be greater than threshold',
+                ], 422);
+            }
+        }
+
+        $user = $request->user();
+        $updateData = [
+            'low_battery_protection_enabled' => $request->enabled,
+        ];
+
+        if ($request->has('threshold')) {
+            $updateData['low_battery_threshold'] = $request->threshold;
+        }
+
+        if ($request->has('stop_limit')) {
+            $updateData['low_battery_stop_limit'] = $request->stop_limit;
+        }
+
+        $user->update($updateData);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Low battery protection updated successfully',
+            'data' => [
+                'low_battery_protection_enabled' => $user->low_battery_protection_enabled,
+                'low_battery_threshold' => $user->low_battery_threshold,
+                'low_battery_stop_limit' => $user->low_battery_stop_limit,
             ],
         ]);
     }

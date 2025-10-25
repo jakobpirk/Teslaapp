@@ -25,6 +25,10 @@ class User extends Authenticatable
         'tessie_api_key',
         'electricity_provider_id',
         'pricing_region',
+        'auto_charging_enabled',
+        'low_battery_protection_enabled',
+        'low_battery_threshold',
+        'low_battery_stop_limit',
     ];
 
     /**
@@ -46,6 +50,10 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
+        'auto_charging_enabled' => 'boolean',
+        'low_battery_protection_enabled' => 'boolean',
+        'low_battery_threshold' => 'integer',
+        'low_battery_stop_limit' => 'integer',
     ];
 
     /**
@@ -102,5 +110,37 @@ class User extends Authenticatable
     public function getPricingRegion(): ?string
     {
         return $this->pricing_region;
+    }
+
+    /**
+     * Check if automatic charging is enabled.
+     */
+    public function isAutoChargingEnabled(): bool
+    {
+        return $this->auto_charging_enabled === true;
+    }
+
+    /**
+     * Check if low battery protection is enabled.
+     */
+    public function isLowBatteryProtectionEnabled(): bool
+    {
+        return $this->low_battery_protection_enabled === true;
+    }
+
+    /**
+     * Get low battery threshold percentage.
+     */
+    public function getLowBatteryThreshold(): ?int
+    {
+        return $this->low_battery_threshold;
+    }
+
+    /**
+     * Get low battery stop limit percentage.
+     */
+    public function getLowBatteryStopLimit(): ?int
+    {
+        return $this->low_battery_stop_limit;
     }
 }

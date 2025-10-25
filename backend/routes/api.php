@@ -118,6 +118,8 @@ Route::prefix('v1')->group(function () {
         Route::post('/settings/electricity-provider', [UserSettingsController::class, 'updateElectricityProvider']);
         Route::post('/settings/pricing-region', [UserSettingsController::class, 'updatePricingRegion']);
         Route::delete('/settings/pricing-region', [UserSettingsController::class, 'removePricingRegion']);
+        Route::post('/settings/auto-charging', [UserSettingsController::class, 'updateAutoCharging']);
+        Route::post('/settings/low-battery-protection', [UserSettingsController::class, 'updateLowBatteryProtection']);
     });
 
     // Aura Electricity Pricing Routes
