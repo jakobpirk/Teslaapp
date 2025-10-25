@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../features/vehicle/presentation/providers/vehicle_provider.dart';
 import '../utils/app_theme.dart';
 import '../widgets/status_card.dart';
@@ -76,7 +77,7 @@ class _HomeScreenState extends State<HomeScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'My Tesla',
+              AppLocalizations.of(context)!.myTesla,
               style: TextStyle(
                 color: AppTheme.textSecondary,
                 fontSize: 14,
@@ -142,19 +143,19 @@ class _HomeScreenState extends State<HomeScreen> {
       childAspectRatio: 1.4,
       children: [
         StatusCard(
-          title: 'Battery',
+          title: AppLocalizations.of(context)!.battery,
           value: state?.batteryLevelString ?? 'N/A',
           icon: Icons.battery_charging_full,
           iconColor: _getBatteryColor(state?.batteryLevel),
         ),
         StatusCard(
-          title: 'Range',
+          title: AppLocalizations.of(context)!.range,
           value: state?.rangeString ?? 'N/A',
           icon: Icons.route,
           iconColor: AppTheme.accentGreen,
         ),
         StatusCard(
-          title: 'Status',
+          title: AppLocalizations.of(context)!.status,
           value: state?.state ?? 'Unknown',
           icon: Icons.info_outline,
           iconColor: state?.isOnline == true
@@ -162,7 +163,7 @@ class _HomeScreenState extends State<HomeScreen> {
               : AppTheme.accentYellow,
         ),
         StatusCard(
-          title: 'Climate',
+          title: AppLocalizations.of(context)!.climate,
           value: state?.isClimateOn == true ? 'On' : 'Off',
           icon: Icons.ac_unit,
           iconColor: state?.isClimateOn == true
@@ -185,8 +186,8 @@ class _HomeScreenState extends State<HomeScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Quick Actions',
+        Text(
+          AppLocalizations.of(context)!.quickActions,
           style: TextStyle(
             color: AppTheme.textPrimary,
             fontSize: 18,
@@ -198,7 +199,7 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             Expanded(
               child: ActionButton(
-                label: state?.isLocked == true ? 'Unlock' : 'Lock',
+                label: state?.isLocked == true ? AppLocalizations.of(context)!.unlock : AppLocalizations.of(context)!.lock,
                 icon: state?.isLocked == true
                     ? Icons.lock_outline
                     : Icons.lock_open,
@@ -209,7 +210,7 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(width: 12),
             Expanded(
               child: ActionButton(
-                label: 'Flash Lights',
+                label: AppLocalizations.of(context)!.flashLights,
                 icon: Icons.lightbulb_outline,
                 onPressed: () => _handleFlashLights(provider),
               ),
@@ -217,7 +218,7 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(width: 12),
             Expanded(
               child: ActionButton(
-                label: 'Honk',
+                label: AppLocalizations.of(context)!.honkHorn,
                 icon: Icons.volume_up,
                 onPressed: () => _handleHonk(provider),
               ),
@@ -232,8 +233,8 @@ class _HomeScreenState extends State<HomeScreen> {
     return Column(
       children: [
         _buildSectionCard(
-          'Climate Control',
-          'Manage temperature and defrost',
+          AppLocalizations.of(context)!.climateControl,
+          AppLocalizations.of(context)!.climateControlDesc,
           Icons.thermostat,
           AppTheme.accentGreen,
           () => Navigator.push(
@@ -243,8 +244,8 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         const SizedBox(height: 12),
         _buildSectionCard(
-          'Charging',
-          'Control charging and set limits',
+          AppLocalizations.of(context)!.charging,
+          AppLocalizations.of(context)!.chargingDesc,
           Icons.ev_station,
           AppTheme.primaryBlue,
           () => Navigator.push(
@@ -254,8 +255,8 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         const SizedBox(height: 12),
         _buildSectionCard(
-          'Charging Dashboard',
-          'View stats, history & pricing',
+          AppLocalizations.of(context)!.chargingDashboard,
+          AppLocalizations.of(context)!.chargingDashboardDesc,
           Icons.analytics,
           AppTheme.accentYellow,
           () => Navigator.push(
@@ -265,8 +266,8 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         const SizedBox(height: 12),
         _buildSectionCard(
-          'Sentry Mode',
-          state?.isSentryMode == true ? 'Active' : 'Inactive',
+          AppLocalizations.of(context)!.sentryMode,
+          state?.isSentryMode == true ? AppLocalizations.of(context)!.sentryModeActive : AppLocalizations.of(context)!.sentryModeInactive,
           Icons.security,
           state?.isSentryMode == true
               ? AppTheme.accentGreen
@@ -339,40 +340,40 @@ class _HomeScreenState extends State<HomeScreen> {
     try {
       if (state?.isLocked == true) {
         await provider.unlock();
-        _showSnackBar('Vehicle unlocked');
+        _showSnackBar(AppLocalizations.of(context)!.vehicleUnlocked);
       } else {
         await provider.lock();
-        _showSnackBar('Vehicle locked');
+        _showSnackBar(AppLocalizations.of(context)!.vehicleLocked);
       }
     } catch (e) {
-      _showSnackBar('Failed: ${e.toString()}', isError: true);
+      _showSnackBar(AppLocalizations.of(context)!.failedWithError(e.toString()), isError: true);
     }
   }
 
   void _handleFlashLights(VehicleProvider provider) async {
     try {
       await provider.flash();
-      _showSnackBar('Lights flashed');
+      _showSnackBar(AppLocalizations.of(context)!.lightsFlashed);
     } catch (e) {
-      _showSnackBar('Failed: ${e.toString()}', isError: true);
+      _showSnackBar(AppLocalizations.of(context)!.failedWithError(e.toString()), isError: true);
     }
   }
 
   void _handleHonk(VehicleProvider provider) async {
     try {
       await provider.honk();
-      _showSnackBar('Horn honked');
+      _showSnackBar(AppLocalizations.of(context)!.hornHonked);
     } catch (e) {
-      _showSnackBar('Failed: ${e.toString()}', isError: true);
+      _showSnackBar(AppLocalizations.of(context)!.failedWithError(e.toString()), isError: true);
     }
   }
 
   void _handleSentryToggle(BuildContext context) async {
     try {
       await context.read<VehicleProvider>().toggleSentryMode();
-      _showSnackBar('Sentry mode toggled');
+      _showSnackBar(AppLocalizations.of(context)!.sentryModeToggled);
     } catch (e) {
-      _showSnackBar('Failed: ${e.toString()}', isError: true);
+      _showSnackBar(AppLocalizations.of(context)!.failedWithError(e.toString()), isError: true);
     }
   }
 

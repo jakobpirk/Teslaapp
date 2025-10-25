@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../providers/auth_provider.dart';
 import 'register_screen.dart';
 import 'forgot_password_screen.dart';
@@ -100,8 +101,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
                     // Title
                     Text(
-                      'Welcome Back',
-                      style: TextStyle(
+                      AppLocalizations.of(context)!.welcomeBack,
+                      style: const TextStyle(
                         fontSize: 32,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
@@ -113,7 +114,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 8),
 
                     Text(
-                      'Sign in to continue',
+                      AppLocalizations.of(context)!.signInToContinue,
                       style: TextStyle(
                         fontSize: 16,
                         color: Colors.white.withOpacity(0.7),
@@ -123,16 +124,17 @@ class _LoginScreenState extends State<LoginScreen> {
 
                     // Email Field
                     _buildTextField(
+                      context: context,
                       controller: _emailController,
-                      label: 'Email',
+                      label: AppLocalizations.of(context)!.email,
                       icon: Icons.email_outlined,
                       keyboardType: TextInputType.emailAddress,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Please enter your email';
+                          return AppLocalizations.of(context)!.pleaseFillRequiredFields;
                         }
                         if (!value.contains('@')) {
-                          return 'Please enter a valid email';
+                          return AppLocalizations.of(context)!.pleaseFillRequiredFields;
                         }
                         return null;
                       },
@@ -141,8 +143,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
                     // Password Field
                     _buildTextField(
+                      context: context,
                       controller: _passwordController,
-                      label: 'Password',
+                      label: AppLocalizations.of(context)!.password,
                       icon: Icons.lock_outline,
                       obscureText: _obscurePassword,
                       suffixIcon: IconButton(
@@ -160,7 +163,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Please enter your password';
+                          return AppLocalizations.of(context)!.pleaseFillRequiredFields;
                         }
                         return null;
                       },
@@ -180,7 +183,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           );
                         },
                         child: Text(
-                          'Forgot Password?',
+                          AppLocalizations.of(context)!.forgotPassword,
                           style: TextStyle(
                             color: Colors.blue.shade300,
                             fontWeight: FontWeight.w600,
@@ -213,9 +216,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                   strokeWidth: 2.5,
                                 ),
                               )
-                            : const Text(
-                                'Sign In',
-                                style: TextStyle(
+                            : Text(
+                                AppLocalizations.of(context)!.signIn,
+                                style: const TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -232,7 +235,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          "Don't have an account? ",
+                          "${AppLocalizations.of(context)!.dontHaveAccount} ",
                           style: TextStyle(
                             color: Colors.white.withOpacity(0.7),
                           ),
@@ -247,7 +250,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             );
                           },
                           child: Text(
-                            'Sign Up',
+                            AppLocalizations.of(context)!.signUp,
                             style: TextStyle(
                               color: Colors.blue.shade300,
                               fontWeight: FontWeight.bold,
@@ -267,6 +270,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Widget _buildTextField({
+    required BuildContext context,
     required TextEditingController controller,
     required String label,
     required IconData icon,

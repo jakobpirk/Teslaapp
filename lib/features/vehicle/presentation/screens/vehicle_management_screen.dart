@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../providers/vehicle_management_provider.dart';
 import '../../../../core/data/models/vehicle_model_dto.dart';
 
@@ -23,7 +24,7 @@ class _VehicleManagementScreenState extends State<VehicleManagementScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('My Vehicles'),
+        title: Text(AppLocalizations.of(context)!.myVehicles),
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
@@ -42,10 +43,10 @@ class _VehicleManagementScreenState extends State<VehicleManagementScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text('Error: ${provider.error}'),
+                  Text('${AppLocalizations.of(context)!.error}: ${provider.error}'),
                   ElevatedButton(
                     onPressed: () => provider.loadVehicles(),
-                    child: const Text('Retry'),
+                    child: Text(AppLocalizations.of(context)!.tryAgain),
                   ),
                 ],
               ),
@@ -59,12 +60,12 @@ class _VehicleManagementScreenState extends State<VehicleManagementScreen> {
                 children: [
                   const Icon(Icons.directions_car, size: 64, color: Colors.grey),
                   const SizedBox(height: 16),
-                  const Text('No vehicles added yet'),
+                  Text(AppLocalizations.of(context)!.noVehiclesAdded),
                   const SizedBox(height: 16),
                   ElevatedButton.icon(
                     onPressed: () => _showAddVehicleDialog(context),
                     icon: const Icon(Icons.add),
-                    label: const Text('Add Vehicle'),
+                    label: Text(AppLocalizations.of(context)!.addVehicle),
                   ),
                 ],
               ),
@@ -122,21 +123,21 @@ class _VehicleManagementScreenState extends State<VehicleManagementScreen> {
                       }
                     },
                     itemBuilder: (context) => [
-                      const PopupMenuItem(
+                      PopupMenuItem(
                         value: 'select',
-                        child: Text('Select'),
+                        child: Text(AppLocalizations.of(context)!.select),
                       ),
-                      const PopupMenuItem(
+                      PopupMenuItem(
                         value: 'statistics',
-                        child: Text('View Statistics'),
+                        child: Text(AppLocalizations.of(context)!.viewStatistics),
                       ),
-                      const PopupMenuItem(
+                      PopupMenuItem(
                         value: 'edit',
-                        child: Text('Edit'),
+                        child: Text(AppLocalizations.of(context)!.edit),
                       ),
-                      const PopupMenuItem(
+                      PopupMenuItem(
                         value: 'delete',
-                        child: Text('Delete'),
+                        child: Text(AppLocalizations.of(context)!.delete),
                       ),
                     ],
                   ),
@@ -158,7 +159,7 @@ class _VehicleManagementScreenState extends State<VehicleManagementScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Add Vehicle'),
+        title: Text(AppLocalizations.of(context)!.addVehicle),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -188,14 +189,14 @@ class _VehicleManagementScreenState extends State<VehicleManagementScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text(AppLocalizations.of(context)!.cancel),
           ),
           ElevatedButton(
             onPressed: () async {
               if (tessieIdController.text.isEmpty ||
                   displayNameController.text.isEmpty) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Please fill required fields')),
+                  SnackBar(content: Text(AppLocalizations.of(context)!.pleaseFillRequiredFields)),
                 );
                 return;
               }
@@ -213,11 +214,11 @@ class _VehicleManagementScreenState extends State<VehicleManagementScreen> {
               if (success && context.mounted) {
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Vehicle added successfully')),
+                  SnackBar(content: Text(AppLocalizations.of(context)!.vehicleAdded)),
                 );
               }
             },
-            child: const Text('Add'),
+            child: Text(AppLocalizations.of(context)!.add),
           ),
         ],
       ),
@@ -231,7 +232,7 @@ class _VehicleManagementScreenState extends State<VehicleManagementScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Edit Vehicle'),
+        title: Text(AppLocalizations.of(context)!.editVehicle),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -248,7 +249,7 @@ class _VehicleManagementScreenState extends State<VehicleManagementScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text(AppLocalizations.of(context)!.cancel),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -264,11 +265,11 @@ class _VehicleManagementScreenState extends State<VehicleManagementScreen> {
               if (success && context.mounted) {
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Vehicle updated successfully')),
+                  SnackBar(content: Text(AppLocalizations.of(context)!.vehicleUpdated)),
                 );
               }
             },
-            child: const Text('Update'),
+            child: Text(AppLocalizations.of(context)!.update),
           ),
         ],
       ),
@@ -279,12 +280,12 @@ class _VehicleManagementScreenState extends State<VehicleManagementScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Vehicle'),
-        content: Text('Are you sure you want to delete ${vehicle.displayName}?'),
+        title: Text(AppLocalizations.of(context)!.deleteVehicle),
+        content: Text(AppLocalizations.of(context)!.confirmDelete),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text(AppLocalizations.of(context)!.cancel),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -295,12 +296,12 @@ class _VehicleManagementScreenState extends State<VehicleManagementScreen> {
               if (success && context.mounted) {
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Vehicle deleted')),
+                  SnackBar(content: Text(AppLocalizations.of(context)!.vehicleDeleted)),
                 );
               }
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Delete'),
+            child: Text(AppLocalizations.of(context)!.delete),
           ),
         ],
       ),
@@ -316,21 +317,21 @@ class _VehicleManagementScreenState extends State<VehicleManagementScreen> {
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          title: Text('${vehicle.displayName} Statistics'),
+          title: Text('${vehicle.displayName} ${AppLocalizations.of(context)!.viewStatistics}'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Total Sessions: ${stats['statistics']['total_charging_sessions']}'),
-              Text('Total Energy: ${stats['statistics']['total_energy_kwh']} kWh'),
-              Text('Total Cost: \$${stats['statistics']['total_cost']}'),
-              Text('Avg Cost/Session: \$${stats['statistics']['average_cost_per_session']}'),
+              Text('${AppLocalizations.of(context)!.totalSessions}: ${stats['statistics']['total_charging_sessions']}'),
+              Text('${AppLocalizations.of(context)!.totalEnergy}: ${AppLocalizations.of(context)!.kWh(stats['statistics']['total_energy_kwh'].toString())}'),
+              Text('${AppLocalizations.of(context)!.totalCost}: \$${stats['statistics']['total_cost']}'),
+              Text('${AppLocalizations.of(context)!.avgCostPerSession}: \$${stats['statistics']['average_cost_per_session']}'),
             ],
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Close'),
+              child: Text(AppLocalizations.of(context)!.close),
             ),
           ],
         ),

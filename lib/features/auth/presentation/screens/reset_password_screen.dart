@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../providers/auth_provider.dart';
 import 'login_screen.dart';
 
@@ -48,7 +49,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
           // Show success message
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: const Text('Password reset successfully!'),
+              content: Text(AppLocalizations.of(context)!.passwordResetSuccessfully),
               backgroundColor: Colors.green.shade400,
               behavior: SnackBarBehavior.floating,
               shape: RoundedRectangleBorder(
@@ -147,7 +148,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
                           // Title
                           Text(
-                            'Reset Password',
+                            AppLocalizations.of(context)!.resetPassword,
                             style: TextStyle(
                               fontSize: 32,
                               fontWeight: FontWeight.bold,
@@ -172,13 +173,14 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
                           // Code Field
                           _buildTextField(
+                            context: context,
                             controller: _codeController,
-                            label: 'Reset Code',
+                            label: AppLocalizations.of(context)!.resetCode,
                             icon: Icons.pin_outlined,
                             keyboardType: TextInputType.number,
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return 'Please enter the reset code';
+                                return AppLocalizations.of(context)!.pleaseFillRequiredFields;
                               }
                               if (value.length != 6) {
                                 return 'Code must be 6 digits';
@@ -190,8 +192,9 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
                           // New Password Field
                           _buildTextField(
+                            context: context,
                             controller: _passwordController,
-                            label: 'New Password',
+                            label: AppLocalizations.of(context)!.newPassword,
                             icon: Icons.lock_outline,
                             obscureText: _obscurePassword,
                             suffixIcon: IconButton(
@@ -209,7 +212,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                             ),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return 'Please enter a password';
+                                return AppLocalizations.of(context)!.pleaseFillRequiredFields;
                               }
                               if (value.length < 8) {
                                 return 'Password must be at least 8 characters';
@@ -221,8 +224,9 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
                           // Confirm Password Field
                           _buildTextField(
+                            context: context,
                             controller: _confirmPasswordController,
-                            label: 'Confirm Password',
+                            label: AppLocalizations.of(context)!.confirmPassword,
                             icon: Icons.lock_outline,
                             obscureText: _obscureConfirmPassword,
                             suffixIcon: IconButton(
@@ -241,7 +245,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                             ),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return 'Please confirm your password';
+                                return AppLocalizations.of(context)!.pleaseFillRequiredFields;
                               }
                               if (value != _passwordController.text) {
                                 return 'Passwords do not match';
@@ -274,8 +278,8 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                                         strokeWidth: 2.5,
                                       ),
                                     )
-                                  : const Text(
-                                      'Reset Password',
+                                  : Text(
+                                      AppLocalizations.of(context)!.resetPassword,
                                       style: TextStyle(
                                         fontSize: 18,
                                         fontWeight: FontWeight.bold,
@@ -300,6 +304,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   }
 
   Widget _buildTextField({
+    required BuildContext context,
     required TextEditingController controller,
     required String label,
     required IconData icon,

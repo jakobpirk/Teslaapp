@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../providers/user_settings_provider.dart';
 import '../../../../core/data/models/electricity_provider_dto.dart';
+import '../../../../providers/locale_provider.dart';
 
 class UserSettingsScreen extends StatefulWidget {
   const UserSettingsScreen({Key? key}) : super(key: key);
@@ -23,7 +25,7 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Settings'),
+        title: Text(AppLocalizations.of(context)!.settings),
       ),
       body: Consumer<UserSettingsProvider>(
         builder: (context, provider, child) {
@@ -36,10 +38,10 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text('Error: ${provider.error}'),
+                  Text('${AppLocalizations.of(context)!.error}: ${provider.error}'),
                   ElevatedButton(
                     onPressed: () => provider.initialize(),
-                    child: const Text('Retry'),
+                    child: Text(AppLocalizations.of(context)!.tryAgain),
                   ),
                 ],
               ),
@@ -54,6 +56,8 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
               _buildTessieApiKeySection(provider),
               const SizedBox(height: 24),
               _buildElectricityProviderSection(provider),
+              const SizedBox(height: 24),
+              _buildLanguageSection(),
             ],
           );
         },
@@ -71,14 +75,14 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Profile',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            Text(
+              AppLocalizations.of(context)!.profile,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
-            Text('Name: ${profile.name}'),
-            Text('Email: ${profile.email}'),
-            Text('Vehicles: ${profile.activeVehiclesCount} active / ${profile.vehiclesCount} total'),
+            Text('${AppLocalizations.of(context)!.name}: ${profile.name}'),
+            Text('${AppLocalizations.of(context)!.email}: ${profile.email}'),
+            Text('${AppLocalizations.of(context)!.vehicles}: ${profile.activeVehiclesCount} active / ${profile.vehiclesCount} total'),
           ],
         ),
       ),
@@ -94,9 +98,9 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Tessie API Key',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            Text(
+              AppLocalizations.of(context)!.tessieApiKey,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
             Row(
@@ -106,7 +110,7 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
                   color: hasTessieKey ? Colors.green : Colors.orange,
                 ),
                 const SizedBox(width: 8),
-                Text(hasTessieKey ? 'Configured' : 'Not configured'),
+                Text(hasTessieKey ? AppLocalizations.of(context)!.configured : AppLocalizations.of(context)!.notConfigured),
               ],
             ),
             const SizedBox(height: 12),
@@ -114,13 +118,13 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
               children: [
                 ElevatedButton(
                   onPressed: () => _showTessieApiKeyDialog(context, provider),
-                  child: Text(hasTessieKey ? 'Update' : 'Add'),
+                  child: Text(hasTessieKey ? AppLocalizations.of(context)!.update : AppLocalizations.of(context)!.add),
                 ),
                 if (hasTessieKey) ...[
                   const SizedBox(width: 8),
                   TextButton(
                     onPressed: () => _confirmRemoveTessieKey(context, provider),
-                    child: const Text('Remove'),
+                    child: Text(AppLocalizations.of(context)!.remove),
                   ),
                 ],
               ],
@@ -140,22 +144,22 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Electricity Provider',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            Text(
+              AppLocalizations.of(context)!.electricityProvider,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
             if (selectedProvider != null) ...[
-              Text('Provider: ${selectedProvider.displayName}'),
+              Text('${AppLocalizations.of(context)!.electricityProvider}: ${selectedProvider.displayName}'),
               if (selectedProvider.description != null)
                 Text(selectedProvider.description!, style: const TextStyle(fontSize: 12, color: Colors.grey)),
             ] else ...[
-              const Text('No provider selected'),
+              Text(AppLocalizations.of(context)!.selectProvider),
             ],
             const SizedBox(height: 12),
             ElevatedButton(
               onPressed: () => _showProviderSelectionDialog(context, provider),
-              child: Text(selectedProvider != null ? 'Change Provider' : 'Select Provider'),
+              child: Text(selectedProvider != null ? AppLocalizations.of(context)!.changeProvider : AppLocalizations.of(context)!.selectProvider),
             ),
           ],
         ),
@@ -169,7 +173,7 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Tessie API Key'),
+        title: Text(AppLocalizations.of(context)!.tessieApiKey),
         content: TextField(
           controller: controller,
           decoration: const InputDecoration(
@@ -181,13 +185,13 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text(AppLocalizations.of(context)!.cancel),
           ),
           ElevatedButton(
             onPressed: () async {
               if (controller.text.isEmpty) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Please enter an API key')),
+                  SnackBar(content: Text(AppLocalizations.of(context)!.pleaseFillRequiredFields)),
                 );
                 return;
               }
@@ -196,11 +200,11 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
               if (success && context.mounted) {
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('API key updated successfully')),
+                  SnackBar(content: Text(AppLocalizations.of(context)!.apiKeyUpdated)),
                 );
               }
             },
-            child: const Text('Save'),
+            child: Text(AppLocalizations.of(context)!.save),
           ),
         ],
       ),
@@ -211,12 +215,12 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Remove API Key'),
-        content: const Text('Are you sure you want to remove your Tessie API key?'),
+        title: Text('${AppLocalizations.of(context)!.remove} ${AppLocalizations.of(context)!.tessieApiKey}'),
+        content: Text(AppLocalizations.of(context)!.confirmDelete),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text(AppLocalizations.of(context)!.cancel),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -224,12 +228,12 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
               if (success && context.mounted) {
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('API key removed')),
+                  SnackBar(content: Text(AppLocalizations.of(context)!.apiKeyUpdated)),
                 );
               }
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Remove'),
+            child: Text(AppLocalizations.of(context)!.remove),
           ),
         ],
       ),
@@ -243,7 +247,7 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Select Electricity Provider'),
+        title: Text(AppLocalizations.of(context)!.selectProvider),
         content: SizedBox(
           width: double.maxFinite,
           child: ListView.builder(
@@ -264,7 +268,7 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
                   if (success && context.mounted) {
                     Navigator.pop(context);
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Provider updated to ${p.displayName}')),
+                      SnackBar(content: Text(AppLocalizations.of(context)!.providerUpdated)),
                     );
                   }
                 },
@@ -275,10 +279,103 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
+            child: Text(AppLocalizations.of(context)!.close),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildLanguageSection() {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              AppLocalizations.of(context)!.language,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+            ListTile(
+              title: Text(AppLocalizations.of(context)!.selectLanguage),
+              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+              onTap: () => _showLanguageDialog(),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showLanguageDialog() {
+    final localeProvider = context.read<LocaleProvider>();
+
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: Text(AppLocalizations.of(context)!.selectLanguage),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                title: const Text('English'),
+                leading: const Text('🇺🇸'),
+                onTap: () async {
+                  await localeProvider.setLocale(const Locale('en'));
+                  if (mounted) {
+                    Navigator.pop(dialogContext);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(AppLocalizations.of(context)!.languageUpdated)),
+                    );
+                  }
+                },
+              ),
+              ListTile(
+                title: const Text('Español'),
+                leading: const Text('🇪🇸'),
+                onTap: () async {
+                  await localeProvider.setLocale(const Locale('es'));
+                  if (mounted) {
+                    Navigator.pop(dialogContext);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(AppLocalizations.of(context)!.languageUpdated)),
+                    );
+                  }
+                },
+              ),
+              ListTile(
+                title: const Text('Deutsch'),
+                leading: const Text('🇩🇪'),
+                onTap: () async {
+                  await localeProvider.setLocale(const Locale('de'));
+                  if (mounted) {
+                    Navigator.pop(dialogContext);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(AppLocalizations.of(context)!.languageUpdated)),
+                    );
+                  }
+                },
+              ),
+              ListTile(
+                title: const Text('Français'),
+                leading: const Text('🇫🇷'),
+                onTap: () async {
+                  await localeProvider.setLocale(const Locale('fr'));
+                  if (mounted) {
+                    Navigator.pop(dialogContext);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(AppLocalizations.of(context)!.languageUpdated)),
+                    );
+                  }
+                },
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
