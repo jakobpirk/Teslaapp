@@ -29,6 +29,7 @@ dependencies:
   # Firebase
   firebase_core: ^2.24.2
   cloud_firestore: ^4.14.0
+  firebase_messaging: ^14.7.10
 
   # Charts
   fl_chart: ^0.66.0
@@ -50,6 +51,10 @@ dependencies:
   local_auth_android: ^1.0.35
   local_auth_ios: ^1.1.5
   flutter_secure_storage: ^9.0.0
+
+  # Notifications & Background Tasks
+  flutter_local_notifications: ^17.0.0
+  permission_handler: ^11.0.1
 
 dev_dependencies:
   flutter_test:

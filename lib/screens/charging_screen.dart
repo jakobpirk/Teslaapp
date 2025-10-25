@@ -15,6 +15,9 @@ class ChargingScreen extends StatefulWidget {
 class _ChargingScreenState extends State<ChargingScreen> {
   double _chargeLimit = 80.0;
   bool _autoChargeEnabled = false;
+  double _maxChargeLimit = 90.0;
+  bool _maxChargeLimitEnabled = false;
+  bool _notificationsEnabled = false;
 
   @override
   void initState() {
@@ -22,7 +25,29 @@ class _ChargingScreenState extends State<ChargingScreen> {
     // Load smart charging data when screen opens
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadSmartChargingData();
+      _loadMaxChargeLimitSettings();
     });
+  }
+
+  Future<void> _loadMaxChargeLimitSettings() async {
+    final vehicleProvider = context.read<VehicleProvider>();
+    final maxLimit = await vehicleProvider.getMaxChargeLimit();
+    final notificationsEnabled = await vehicleProvider.areNotificationsEnabled();
+
+    setState(() {
+      if (maxLimit != null) {
+        _maxChargeLimit = maxLimit.toDouble();
+        _maxChargeLimitEnabled = true;
+      }
+      _notificationsEnabled = notificationsEnabled;
+    });
+  }
+
+  String? _getVehicleId() {
+    final vehicleProvider = context.read<VehicleProvider>();
+    // Use VIN or display name as vehicle ID
+    // TODO: Get actual VIN from vehicle state when available
+    return vehicleProvider.vehicleState?.displayName ?? 'default-vehicle';
   }
 
   Future<void> _loadSmartChargingData() async {
@@ -68,6 +93,10 @@ class _ChargingScreenState extends State<ChargingScreen> {
                   _buildChargingControls(provider, isCharging),
                   const SizedBox(height: 24),
                   _buildChargeLimitSlider(provider),
+                  const SizedBox(height: 24),
+                  _buildMaxChargeLimitSection(provider),
+                  const SizedBox(height: 24),
+                  _buildNotificationsSection(provider),
                   const SizedBox(height: 24),
                   _buildChargingInfo(state),
                 ],
@@ -642,6 +671,237 @@ class _ChargingScreenState extends State<ChargingScreen> {
     } catch (e) {
       _showSnackBar('Failed to start auto-charge: ${e.toString()}', isError: true);
     }
+  }
+
+  Widget _buildMaxChargeLimitSection(VehicleProvider provider) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Auto-Stop Charging',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Stop automatically at target level',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: AppTheme.textSecondary.withOpacity(0.8),
+                      ),
+                    ),
+                  ],
+                ),
+                Switch(
+                  value: _maxChargeLimitEnabled,
+                  onChanged: (value) async {
+                    setState(() => _maxChargeLimitEnabled = value);
+                    final vehicleId = _getVehicleId();
+                    if (value) {
+                      await provider.setMaxChargeLimit(
+                        _maxChargeLimit.toInt(),
+                        vehicleId: vehicleId,
+                      );
+                      _showSnackBar('Auto-stop enabled at ${_maxChargeLimit.toInt()}%');
+                    } else {
+                      await provider.setMaxChargeLimit(null, vehicleId: vehicleId);
+                      _showSnackBar('Auto-stop disabled');
+                    }
+                  },
+                  activeColor: AppTheme.accentGreen,
+                ),
+              ],
+            ),
+            if (_maxChargeLimitEnabled) ...[
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Target Level',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: AppTheme.textSecondary,
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppTheme.accentGreen.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      '${_maxChargeLimit.toInt()}%',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.accentGreen,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              SliderTheme(
+                data: SliderThemeData(
+                  activeTrackColor: AppTheme.accentGreen,
+                  inactiveTrackColor: AppTheme.accentGreen.withOpacity(0.2),
+                  thumbColor: AppTheme.accentGreen,
+                  overlayColor: AppTheme.accentGreen.withOpacity(0.2),
+                  trackHeight: 6,
+                ),
+                child: Slider(
+                  value: _maxChargeLimit,
+                  min: 50,
+                  max: 100,
+                  divisions: 10,
+                  label: '${_maxChargeLimit.toInt()}%',
+                  onChanged: (value) {
+                    setState(() => _maxChargeLimit = value);
+                  },
+                  onChangeEnd: (value) async {
+                    final vehicleId = _getVehicleId();
+                    await provider.setMaxChargeLimit(
+                      value.toInt(),
+                      vehicleId: vehicleId,
+                    );
+                    _showSnackBar('Target level set to ${value.toInt()}%');
+                  },
+                ),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('50%', style: TextStyle(color: AppTheme.textSecondary)),
+                  Text('100%', style: TextStyle(color: AppTheme.textSecondary)),
+                ],
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNotificationsSection(VehicleProvider provider) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.notifications_active,
+                          size: 20,
+                          color: AppTheme.primaryBlue,
+                        ),
+                        const SizedBox(width: 8),
+                        const Text(
+                          'Charging Notifications',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: AppTheme.textPrimary,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Get notified when charging starts/stops',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: AppTheme.textSecondary.withOpacity(0.8),
+                      ),
+                    ),
+                  ],
+                ),
+                Switch(
+                  value: _notificationsEnabled,
+                  onChanged: (value) async {
+                    setState(() => _notificationsEnabled = value);
+                    final vehicleId = _getVehicleId();
+                    if (value) {
+                      await provider.enableChargingNotifications(vehicleId: vehicleId);
+                      _showSnackBar('Notifications enabled');
+                    } else {
+                      await provider.disableChargingNotifications(vehicleId: vehicleId);
+                      _showSnackBar('Notifications disabled');
+                    }
+                  },
+                  activeColor: AppTheme.primaryBlue,
+                ),
+              ],
+            ),
+            if (_notificationsEnabled) ...[
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppTheme.primaryBlue.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildNotificationFeature('Charging started'),
+                    const SizedBox(height: 6),
+                    _buildNotificationFeature('Charging stopped'),
+                    const SizedBox(height: 6),
+                    _buildNotificationFeature('Target level reached'),
+                    const SizedBox(height: 6),
+                    _buildNotificationFeature('Charging progress updates'),
+                  ],
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNotificationFeature(String text) {
+    return Row(
+      children: [
+        Icon(
+          Icons.check_circle,
+          size: 16,
+          color: AppTheme.accentGreen,
+        ),
+        const SizedBox(width: 8),
+        Text(
+          text,
+          style: TextStyle(
+            fontSize: 13,
+            color: AppTheme.textSecondary,
+          ),
+        ),
+      ],
+    );
   }
 
   void _showSnackBar(String message, {bool isError = false}) {
