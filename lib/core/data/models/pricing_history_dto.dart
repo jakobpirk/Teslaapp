@@ -3,7 +3,6 @@ class PricingHistoryDto {
   final DateTime timestamp;
   final double pricePerKwh;
   final String currency;
-  final String? location;
   final String? utilityProvider;
   final String? rateType;
   final Map<String, dynamic>? metadata;
@@ -13,7 +12,6 @@ class PricingHistoryDto {
     required this.timestamp,
     required this.pricePerKwh,
     required this.currency,
-    this.location,
     this.utilityProvider,
     this.rateType,
     this.metadata,
@@ -25,7 +23,6 @@ class PricingHistoryDto {
       timestamp: DateTime.parse(json['timestamp'] as String),
       pricePerKwh: (json['price_per_kwh'] as num).toDouble(),
       currency: json['currency'] as String? ?? 'USD',
-      location: json['location'] as String?,
       utilityProvider: json['utility_provider'] as String?,
       rateType: json['rate_type'] as String?,
       metadata: json['metadata'] as Map<String, dynamic>?,
@@ -38,7 +35,6 @@ class PricingHistoryDto {
       'timestamp': timestamp.toIso8601String(),
       'price_per_kwh': pricePerKwh,
       'currency': currency,
-      'location': location,
       'utility_provider': utilityProvider,
       'rate_type': rateType,
       'metadata': metadata,
@@ -70,7 +66,6 @@ class PricingHistoryListResponseDto {
 class PricingMetaDto {
   final String startTime;
   final String endTime;
-  final String location;
   final int count;
   final double? averagePrice;
   final double? minPrice;
@@ -79,7 +74,6 @@ class PricingMetaDto {
   PricingMetaDto({
     required this.startTime,
     required this.endTime,
-    required this.location,
     required this.count,
     this.averagePrice,
     this.minPrice,
@@ -90,7 +84,6 @@ class PricingMetaDto {
     return PricingMetaDto(
       startTime: json['start_time'] as String,
       endTime: json['end_time'] as String,
-      location: json['location'] as String,
       count: json['count'] as int,
       averagePrice: (json['average_price'] as num?)?.toDouble(),
       minPrice: (json['min_price'] as num?)?.toDouble(),

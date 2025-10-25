@@ -18,21 +18,18 @@ class PricingHistoryController extends Controller
         $request->validate([
             'start_time' => 'required|date',
             'end_time' => 'required|date|after_or_equal:start_time',
-            'location' => 'nullable|string',
         ]);
 
         $startTime = Carbon::parse($request->start_time);
         $endTime = Carbon::parse($request->end_time);
-        $location = $request->location ?? 'default';
 
-        $pricing = PricingHistory::getForTimeRange($startTime, $endTime, $location);
+        $pricing = PricingHistory::getForTimeRange($startTime, $endTime);
 
         return response()->json([
             'data' => $pricing,
             'meta' => [
                 'start_time' => $startTime->toIso8601String(),
                 'end_time' => $endTime->toIso8601String(),
-                'location' => $location,
                 'count' => $pricing->count(),
             ],
         ]);
@@ -43,11 +40,9 @@ class PricingHistoryController extends Controller
      */
     public function current(Request $request): JsonResponse
     {
-        $location = $request->location ?? 'default';
         $now = Carbon::now()->startOfHour();
 
         $currentPrice = PricingHistory::where('timestamp', $now)
-            ->where('location', $location)
             ->first();
 
         if (!$currentPrice) {
@@ -62,18 +57,16 @@ class PricingHistoryController extends Controller
      */
     public function todayAndTomorrow(Request $request): JsonResponse
     {
-        $location = $request->location ?? 'default';
         $startTime = Carbon::now()->startOfDay();
         $endTime = Carbon::now()->addDay()->endOfDay();
 
-        $pricing = PricingHistory::getForTimeRange($startTime, $endTime, $location);
+        $pricing = PricingHistory::getForTimeRange($startTime, $endTime);
 
         return response()->json([
             'data' => $pricing,
             'meta' => [
                 'start_time' => $startTime->toIso8601String(),
                 'end_time' => $endTime->toIso8601String(),
-                'location' => $location,
                 'count' => $pricing->count(),
                 'average_price' => $pricing->avg('price_per_kwh'),
                 'min_price' => $pricing->min('price_per_kwh'),
@@ -90,21 +83,18 @@ class PricingHistoryController extends Controller
         $request->validate([
             'start_time' => 'required|date',
             'end_time' => 'required|date|after_or_equal:start_time',
-            'location' => 'nullable|string',
         ]);
 
         $startTime = Carbon::parse($request->start_time);
         $endTime = Carbon::parse($request->end_time);
-        $location = $request->location ?? 'default';
 
-        $averagePrice = PricingHistory::getAveragePrice($startTime, $endTime, $location);
+        $averagePrice = PricingHistory::getAveragePrice($startTime, $endTime);
 
         return response()->json([
             'average_price' => $averagePrice,
             'currency' => 'USD',
             'start_time' => $startTime->toIso8601String(),
             'end_time' => $endTime->toIso8601String(),
-            'location' => $location,
         ]);
     }
 }

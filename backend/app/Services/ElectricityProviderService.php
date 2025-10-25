@@ -14,7 +14,7 @@ class ElectricityProviderService
      * Fetch current pricing from provider's API.
      * This simulates a network call to the provider's API.
      */
-    public function fetchCurrentPricing(ElectricityProvider $provider, ?string $location = null): array
+    public function fetchCurrentPricing(ElectricityProvider $provider): array
     {
         try {
             // Simulate network call delay
@@ -31,7 +31,6 @@ class ElectricityProviderService
                 'timestamp' => $now,
                 'price_per_kwh' => $pricePerKwh,
                 'currency' => 'USD', // Default currency, can be enhanced later
-                'location' => $location,
                 'utility_provider' => $provider->display_name,
                 'rate_type' => $rateType,
                 'metadata' => [
@@ -54,8 +53,7 @@ class ElectricityProviderService
      */
     public function fetchPricingForecast(
         ElectricityProvider $provider,
-        int $hours = 48,
-        ?string $location = null
+        int $hours = 48
     ): array {
         try {
             // Simulate network call delay
@@ -75,7 +73,6 @@ class ElectricityProviderService
                     'timestamp' => $timestamp,
                     'price_per_kwh' => $pricePerKwh,
                     'currency' => 'USD', // Default currency, can be enhanced later
-                    'location' => $location,
                     'utility_provider' => $provider->display_name,
                     'rate_type' => $rateType,
                     'metadata' => [
@@ -105,7 +102,6 @@ class ElectricityProviderService
             'timestamp' => $pricingData['timestamp'],
             'price_per_kwh' => $pricingData['price_per_kwh'],
             'currency' => $pricingData['currency'],
-            'location' => $pricingData['location'],
             'utility_provider' => $pricingData['utility_provider'],
             'rate_type' => $pricingData['rate_type'],
             'metadata' => $pricingData['metadata'],
@@ -115,9 +111,9 @@ class ElectricityProviderService
     /**
      * Fetch and store current pricing.
      */
-    public function updateCurrentPricing(ElectricityProvider $provider, ?string $location = null): PricingHistory
+    public function updateCurrentPricing(ElectricityProvider $provider): PricingHistory
     {
-        $pricingData = $this->fetchCurrentPricing($provider, $location);
+        $pricingData = $this->fetchCurrentPricing($provider);
         return $this->storePricingData($pricingData);
     }
 
@@ -126,16 +122,14 @@ class ElectricityProviderService
      */
     public function updatePricingForecast(
         ElectricityProvider $provider,
-        int $hours = 48,
-        ?string $location = null
+        int $hours = 48
     ): array {
-        $forecast = $this->fetchPricingForecast($provider, $hours, $location);
+        $forecast = $this->fetchPricingForecast($provider, $hours);
         $stored = [];
 
         foreach ($forecast as $pricingData) {
             // Check if pricing for this timestamp already exists
             $existing = PricingHistory::where('timestamp', $pricingData['timestamp'])
-                ->where('location', $pricingData['location'])
                 ->first();
 
             if (!$existing) {

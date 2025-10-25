@@ -23,7 +23,6 @@ class ChargingRecommendationController extends Controller
     public function generate(Request $request, string $vehicleId): JsonResponse
     {
         $validated = $request->validate([
-            'location' => 'nullable|string',
             'required_by' => 'nullable|date',
             'energy_needed' => 'nullable|numeric|min:0',
         ]);

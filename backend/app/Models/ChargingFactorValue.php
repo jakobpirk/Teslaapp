@@ -16,7 +16,6 @@ class ChargingFactorValue extends Model
     protected $fillable = [
         'charging_factor_id',
         'timestamp',
-        'location',
         'value',
         'value_text',
         'value_boolean',
@@ -62,16 +61,11 @@ class ChargingFactorValue extends Model
     /**
      * Get values for a specific factor and time range
      */
-    public static function getForFactorAndTimeRange($factorId, $startTime, $endTime, $location = null)
+    public static function getForFactorAndTimeRange($factorId, $startTime, $endTime)
     {
-        $query = static::where('charging_factor_id', $factorId)
+        return static::where('charging_factor_id', $factorId)
             ->whereBetween('timestamp', [$startTime, $endTime])
-            ->orderBy('timestamp');
-
-        if ($location) {
-            $query->where('location', $location);
-        }
-
-        return $query->get();
+            ->orderBy('timestamp')
+            ->get();
     }
 }

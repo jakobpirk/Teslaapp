@@ -16,7 +16,6 @@ class PricingHistory extends Model
         'timestamp',
         'price_per_kwh',
         'currency',
-        'location',
         'utility_provider',
         'rate_type',
         'metadata',
@@ -34,29 +33,19 @@ class PricingHistory extends Model
     /**
      * Get pricing data for a specific time range
      */
-    public static function getForTimeRange($startTime, $endTime, $location = null)
+    public static function getForTimeRange($startTime, $endTime)
     {
-        $query = static::whereBetween('timestamp', [$startTime, $endTime])
-            ->orderBy('timestamp');
-
-        if ($location) {
-            $query->where('location', $location);
-        }
-
-        return $query->get();
+        return static::whereBetween('timestamp', [$startTime, $endTime])
+            ->orderBy('timestamp')
+            ->get();
     }
 
     /**
      * Get the average price for a time period
      */
-    public static function getAveragePrice($startTime, $endTime, $location = null)
+    public static function getAveragePrice($startTime, $endTime)
     {
-        $query = static::whereBetween('timestamp', [$startTime, $endTime]);
-
-        if ($location) {
-            $query->where('location', $location);
-        }
-
-        return $query->avg('price_per_kwh');
+        return static::whereBetween('timestamp', [$startTime, $endTime])
+            ->avg('price_per_kwh');
     }
 }

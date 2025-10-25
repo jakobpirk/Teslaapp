@@ -18,7 +18,6 @@ class ChargingSessionMapper {
       pricing: dto.pricing != null
           ? PricingDataMapper.toEntity(dto.pricing!)
           : null,
-      location: dto.location,
       isComplete: dto.isComplete,
     );
   }
@@ -39,7 +38,6 @@ class ChargingSessionMapper {
       pricing: entity.pricing != null
           ? PricingDataMapper.toDto(entity.pricing!)
           : null,
-      location: entity.location,
       isComplete: entity.isComplete,
     );
   }

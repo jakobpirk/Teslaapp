@@ -18,12 +18,11 @@ class SmartChargingService
      * Generate a charging recommendation for a vehicle
      *
      * @param string $vehicleId
-     * @param array $options Optional parameters (location, required_by, energy_needed)
+     * @param array $options Optional parameters (required_by, energy_needed)
      * @return ChargingRecommendation
      */
     public function generateRecommendation(string $vehicleId, array $options = []): ChargingRecommendation
     {
-        $location = $options['location'] ?? 'default';
         $requiredBy = isset($options['required_by']) ? Carbon::parse($options['required_by']) : Carbon::now()->addHours(self::LOOK_AHEAD_HOURS);
         $energyNeeded = $options['energy_needed'] ?? 50; // kWh
 
@@ -35,7 +34,6 @@ class SmartChargingService
         $chargingWindows = $this->analyzeChargingWindows(
             $now,
             $requiredBy,
-            $location,
             $energyNeeded,
             $enabledFactors
         );
@@ -84,7 +82,6 @@ class SmartChargingService
     private function analyzeChargingWindows(
         Carbon $startTime,
         Carbon $endTime,
-        string $location,
         float $energyNeeded,
         $enabledFactors
     ): array {
@@ -99,7 +96,6 @@ class SmartChargingService
             $windowScore = $this->scoreChargingWindow(
                 $windowStart,
                 $windowEnd,
-                $location,
                 $energyNeeded,
                 $enabledFactors
             );
@@ -122,7 +118,6 @@ class SmartChargingService
     private function scoreChargingWindow(
         Carbon $startTime,
         Carbon $endTime,
-        string $location,
         float $energyNeeded,
         $enabledFactors
     ): array {
@@ -136,7 +131,6 @@ class SmartChargingService
                 $factor,
                 $startTime,
                 $endTime,
-                $location,
                 $energyNeeded
             );
 
@@ -174,13 +168,11 @@ class SmartChargingService
         ChargingFactor $factor,
         Carbon $startTime,
         Carbon $endTime,
-        string $location,
         float $energyNeeded
     ): array {
         // For now, only price factor is implemented
         if ($factor->name === 'price') {
             $avgPrice = PricingHistory::whereBetween('timestamp', [$startTime, $endTime])
-                ->where('location', $location)
                 ->avg('price_per_kwh') ?? 0.15;
 
             // Normalize: lower prices get higher scores (0-100)

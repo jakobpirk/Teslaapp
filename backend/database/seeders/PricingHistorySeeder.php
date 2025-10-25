@@ -21,7 +21,6 @@ class PricingHistorySeeder extends Seeder
         $startDate = Carbon::now()->startOfDay();
         $endDate = Carbon::now()->addDays(2)->endOfDay(); // Today + Tomorrow + a bit
 
-        $location = 'default';
         $currency = 'USD';
 
         $current = $startDate->copy();
@@ -42,7 +41,6 @@ class PricingHistorySeeder extends Seeder
                 'timestamp' => $current->copy(),
                 'price_per_kwh' => $pricePerKwh,
                 'currency' => $currency,
-                'location' => $location,
                 'utility_provider' => 'Mock Utility Company',
                 'rate_type' => $rateType,
                 'metadata' => [
