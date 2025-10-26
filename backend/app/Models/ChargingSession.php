@@ -22,6 +22,10 @@ class ChargingSession extends Model
         'charge_rate',
         'start_battery_level',
         'end_battery_level',
+        'co2_emitted',
+        'co2_per_kwh',
+        'renewable_percentage',
+        'grid_zone',
     ];
 
     protected $casts = [
@@ -32,6 +36,9 @@ class ChargingSession extends Model
         'charge_rate' => 'float',
         'start_battery_level' => 'integer',
         'end_battery_level' => 'integer',
+        'co2_emitted' => 'float',
+        'co2_per_kwh' => 'float',
+        'renewable_percentage' => 'float',
     ];
 
     public $incrementing = false;
