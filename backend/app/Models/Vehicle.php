@@ -74,6 +74,22 @@ class Vehicle extends Model
     }
 
     /**
+     * Get the scheduled departures for this vehicle.
+     */
+    public function scheduledDepartures(): HasMany
+    {
+        return $this->hasMany(ScheduledDeparture::class);
+    }
+
+    /**
+     * Get the alert rules for this vehicle.
+     */
+    public function alertRules(): HasMany
+    {
+        return $this->hasMany(AlertRule::class);
+    }
+
+    /**
      * Scope to get only active vehicles.
      */
     public function scopeActive($query)

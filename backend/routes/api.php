@@ -11,6 +11,9 @@ use App\Http\Controllers\VehicleController;
 use App\Http\Controllers\ElectricityProviderController;
 use App\Http\Controllers\UserSettingsController;
 use App\Http\Controllers\AuraController;
+use App\Http\Controllers\ScheduledDepartureController;
+use App\Http\Controllers\AlertRuleController;
+use App\Http\Controllers\CO2StatisticsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -132,5 +135,38 @@ Route::prefix('v1')->group(function () {
         // Public endpoints for getting pricing data
         Route::get('/pricing', [AuraController::class, 'getPricing']);
         Route::get('/tomorrow/availability', [AuraController::class, 'checkTomorrowAvailability']);
+    });
+
+    // Scheduled Departure Routes (Protected)
+    Route::middleware('auth:sanctum')->prefix('scheduled-departures')->group(function () {
+        Route::get('/', [ScheduledDepartureController::class, 'index']);
+        Route::post('/', [ScheduledDepartureController::class, 'store']);
+        Route::get('/{id}', [ScheduledDepartureController::class, 'show']);
+        Route::put('/{id}', [ScheduledDepartureController::class, 'update']);
+        Route::delete('/{id}', [ScheduledDepartureController::class, 'destroy']);
+        Route::post('/{id}/toggle', [ScheduledDepartureController::class, 'toggle']);
+        Route::get('/vehicle/{vehicleId}', [ScheduledDepartureController::class, 'byVehicle']);
+    });
+
+    // Alert Rule Routes (Protected)
+    Route::middleware('auth:sanctum')->prefix('alert-rules')->group(function () {
+        Route::get('/', [AlertRuleController::class, 'index']);
+        Route::get('/templates', [AlertRuleController::class, 'templates']);
+        Route::post('/', [AlertRuleController::class, 'store']);
+        Route::get('/{id}', [AlertRuleController::class, 'show']);
+        Route::put('/{id}', [AlertRuleController::class, 'update']);
+        Route::delete('/{id}', [AlertRuleController::class, 'destroy']);
+        Route::post('/{id}/toggle', [AlertRuleController::class, 'toggle']);
+        Route::post('/{id}/test', [AlertRuleController::class, 'test']);
+        Route::get('/vehicle/{vehicleId}', [AlertRuleController::class, 'byVehicle']);
+    });
+
+    // CO2 Statistics Routes (Protected)
+    Route::middleware('auth:sanctum')->prefix('co2-statistics')->group(function () {
+        Route::get('/user', [CO2StatisticsController::class, 'user']);
+        Route::get('/vehicle/{vehicleId}', [CO2StatisticsController::class, 'vehicle']);
+        Route::get('/tips', [CO2StatisticsController::class, 'tips']);
+        Route::get('/dashboard', [CO2StatisticsController::class, 'dashboard']);
+        Route::post('/backfill', [CO2StatisticsController::class, 'backfill']);
     });
 });
